@@ -1,0 +1,14 @@
+/*
+ *		prjOS
+ */
+
+File Description:
+LM4F120XL.cfg - OpenOCD config file for debugging Stellaris Launchpad
+
+
+Supported platforms:
+
+Stellaris Launchpad
+
+Toolchain info:
+http://forum.stellarisiti.com/topic/355-toolchain-setup-under-gnulinux-including-eclipse/

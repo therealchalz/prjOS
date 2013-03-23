@@ -51,6 +51,10 @@
 									<listOptionValue builtIn="false" value="/home/che/rtos/stellaris/stellarisware/driverlib/gcc-cm4f"/>
 								</option>
 								<option id="gnu.c.link.option.ldflags.1227813746" name="Linker flags" superClass="gnu.c.link.option.ldflags" value="-Wl,--static,--gc-sections,-T../LM4F.ld -mthumb -mcpu=cortex-m4" valueType="string"/>
+								<option id="gnu.c.link.option.other.1721953837" name="Other options (-Xlinker [option])" superClass="gnu.c.link.option.other" valueType="stringList">
+									<listOptionValue builtIn="false" value="-Map=prjOS.map"/>
+								</option>
+								<option id="gnu.c.link.option.userobjs.1971882155" name="Other objects" superClass="gnu.c.link.option.userobjs" valueType="userObjs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1486345244" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -59,6 +63,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.497013731" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1625671521" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.997007380" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+								<option id="gnu.both.asm.option.flags.940811178" name="Assembler flags" superClass="gnu.both.asm.option.flags" value="-c -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.956958500" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>

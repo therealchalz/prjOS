@@ -23,6 +23,8 @@ int main(void) {
 	bwprintf("\n\n\n********Kernel Starting********\n\r\n");
 	cpuPrintInfo();
 
+	cpu_barf();
+
 	int testLoop = 10;
 
 	while(testLoop > 0)

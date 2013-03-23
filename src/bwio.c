@@ -1,156 +1,192 @@
 /*
- * bwio.c
- *
- */
+	Copyright 2001, 2002 Georges Menie (www.menie.org)
 
-#include <bwio.h>
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-char c2x( char ch ) {
-	if ( (ch <= 9) ) return '0' + ch;
-	return 'a' + ch - 10;
-}
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
-void bwputx( char c ) {
-	char chh, chl;
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 
-	chh = c2x( c / 16 );
-	chl = c2x( c % 16 );
-	UARTPutC( chh );
-	UARTPutC( chl );
-}
+/*
+	putchar is the only external dependency for this file,
+	if you have a working putchar, just remove the following
+	define. If the function should be called something else,
+	replace outbyte(c) by your own function call.
+*/
+#define putchar(c) UARTPutC(c)
 
-void bwputr( unsigned int reg ) {
-	int byte;
-	char *ch = (char *) &reg;
-
-	for( byte = 3; byte >= 0; byte-- ) bwputx( ch[byte] );
-	UARTPutC( ' ' );
-}
-
-void bwputstr( char *str ) {
-	while( *str ) {
-		UARTPutC( *str );
-		str++;
+static void printchar(char **str, int c)
+{
+	extern int putchar(int c);
+	if (str) {
+		**str = c;
+		++(*str);
 	}
+	else (void)putchar(c);
 }
 
-void bwputw( int n, char fc, char *bf ) {
-	char ch;
-	char *p = bf;
+#define PAD_RIGHT 1
+#define PAD_ZERO 2
 
-	while( *p++ && n > 0 ) n--;
-	while( n-- > 0 ) UARTPutC( fc );
-	while( ( ch = *bf++ ) ) UARTPutC( ch );
-}
+static int prints(char **out, const char *string, int width, int pad)
+{
+	register int pc = 0, padchar = ' ';
 
-int bwa2d( char ch ) {
-	if( ch >= '0' && ch <= '9' ) return ch - '0';
-	if( ch >= 'a' && ch <= 'f' ) return ch - 'a' + 10;
-	if( ch >= 'A' && ch <= 'F' ) return ch - 'A' + 10;
-	return -1;
-}
-
-char bwa2i( char ch, char **src, int base, int *nump ) {
-	int num, digit;
-	char *p;
-
-	p = *src; num = 0;
-	while( ( digit = bwa2d( ch ) ) >= 0 ) {
-		if ( digit > base ) break;
-		num = num*base + digit;
-		ch = *p++;
+	if (width > 0) {
+		register int len = 0;
+		register const char *ptr;
+		for (ptr = string; *ptr; ++ptr) ++len;
+		if (len >= width) width = 0;
+		else width -= len;
+		if (pad & PAD_ZERO) padchar = '0';
 	}
-	*src = p; *nump = num;
-	return ch;
-}
-
-void bwui2a( unsigned int num, unsigned int base, char *bf ) {
-	int n = 0;
-	int dgt;
-	unsigned int d = 1;
-
-	while( (num / d) >= base ) d *= base;
-	while( d != 0 ) {
-		dgt = num / d;
-		num %= d;
-		d /= base;
-		if( n || dgt > 0 || d == 0 ) {
-			*bf++ = dgt + ( dgt < 10 ? '0' : 'a' - 10 );
-			++n;
+	if (!(pad & PAD_RIGHT)) {
+		for ( ; width > 0; --width) {
+			printchar (out, padchar);
+			++pc;
 		}
 	}
-	*bf = 0;
-}
-
-void bwi2a( int num, char *bf ) {
-	if( num < 0 ) {
-		num = -num;
-		*bf++ = '-';
+	for ( ; *string ; ++string) {
+		printchar (out, *string);
+		++pc;
 	}
-	bwui2a( num, 10, bf );
+	for ( ; width > 0; --width) {
+		printchar (out, padchar);
+		++pc;
+	}
+
+	return pc;
 }
 
-void bwformat ( char *fmt, va_list va ) {
-	char bf[12];
-	char ch, lz;
-	int w;
+/* the following should be enough for 32 bit int */
+#define PRINT_BUF_LEN 12
 
+static int printi(char **out, int i, int b, int sg, int width, int pad, int letbase)
+{
+	char print_buf[PRINT_BUF_LEN];
+	register char *s;
+	register int t, neg = 0, pc = 0;
+	register unsigned int u = i;
 
-	while ( ( ch = *(fmt++) ) ) {
-		if ( ch != '%' )
-			UARTPutC( ch );
+	if (i == 0) {
+		print_buf[0] = '0';
+		print_buf[1] = '\0';
+		return prints (out, print_buf, width, pad);
+	}
+
+	if (sg && b == 10 && i < 0) {
+		neg = 1;
+		u = -i;
+	}
+
+	s = print_buf + PRINT_BUF_LEN-1;
+	*s = '\0';
+
+	while (u) {
+		t = u % b;
+		if( t >= 10 )
+			t += letbase - '0' - 10;
+		*--s = t + '0';
+		u /= b;
+	}
+
+	if (neg) {
+		if( width && (pad & PAD_ZERO) ) {
+			printchar (out, '-');
+			++pc;
+			--width;
+		}
 		else {
-			lz = 0; w = 0;
-			ch = *(fmt++);
-			switch ( ch ) {
-			case '0':
-				lz = 1; ch = *(fmt++);
-				break;
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				ch = bwa2i( ch, &fmt, 10, &w );
-				break;
-			}
-			switch( ch ) {
-			case 0: return;
-			case 'c':
-				UARTPutC( va_arg( va, char ) );
-				break;
-			case 's':
-				bwputw( w, 0, va_arg( va, char* ) );
-				break;
-			case 'u':
-				bwui2a( va_arg( va, unsigned int ), 10, bf );
-				bwputw( w, lz, bf );
-				break;
-			case 'd':
-				bwi2a( va_arg( va, int ), bf );
-				bwputw( w, lz, bf );
-				break;
-			case 'x':
-				bwui2a( va_arg( va, unsigned int ), 16, bf );
-				bwputw( w, lz, bf );
-				break;
-			case '%':
-				UARTPutC( ch );
-				break;
-			}
+			*--s = '-';
 		}
 	}
+
+	return pc + prints (out, s, width, pad);
 }
 
-void bwprintf( char *fmt, ... ) {
-        va_list va;
+static int print(char **out, int *varg)
+{
+	register int width, pad;
+	register int pc = 0;
+	register char *format = (char *)(*varg++);
+	char scr[2];
 
-        va_start(va,fmt);
-        bwformat( fmt, va );
-        va_end(va);
+	for (; *format != 0; ++format) {
+		if (*format == '%') {
+			++format;
+			width = pad = 0;
+			if (*format == '\0') break;
+			if (*format == '%') goto out;
+			if (*format == '-') {
+				++format;
+				pad = PAD_RIGHT;
+			}
+			while (*format == '0') {
+				++format;
+				pad |= PAD_ZERO;
+			}
+			for ( ; *format >= '0' && *format <= '9'; ++format) {
+				width *= 10;
+				width += *format - '0';
+			}
+			if( *format == 's' ) {
+				register char *s = *((char **)varg++);
+				pc += prints (out, s?s:"(null)", width, pad);
+				continue;
+			}
+			if( *format == 'd' ) {
+				pc += printi (out, *varg++, 10, 1, width, pad, 'a');
+				continue;
+			}
+			if( *format == 'x' ) {
+				pc += printi (out, *varg++, 16, 0, width, pad, 'a');
+				continue;
+			}
+			if( *format == 'X' ) {
+				pc += printi (out, *varg++, 16, 0, width, pad, 'A');
+				continue;
+			}
+			if( *format == 'u' ) {
+				pc += printi (out, *varg++, 10, 0, width, pad, 'a');
+				continue;
+			}
+			if( *format == 'c' ) {
+				/* char are converted to int then pushed on the stack */
+				scr[0] = *varg++;
+				scr[1] = '\0';
+				pc += prints (out, scr, width, pad);
+				continue;
+			}
+		}
+		else {
+		out:
+			printchar (out, *format);
+			++pc;
+		}
+	}
+	if (out) **out = '\0';
+	return pc;
 }
 
+/* assuming sizeof(void *) == sizeof(int) */
+
+int bwprintf(const char *format, ...)
+{
+	register int *varg = (int *)(&format);
+	return print(0, varg);
+}
+
+int sprintf(char *out, const char *format, ...)
+{
+	register int *varg = (int *)(&format);
+	return print(&out, varg);
+}

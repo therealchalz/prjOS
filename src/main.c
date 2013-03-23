@@ -2,6 +2,7 @@
 #include <bwio.h>
 #include <cpu.h>
 #include <board.h>
+#include <debug.h>
 
 
 #ifdef DEBUG
@@ -20,6 +21,7 @@ int main(void) {
 	UARTInit(115200);
 
 	bwprintf("\n\n\n********Kernel Starting********\n\r\n");
+	cpuPrintInfo();
 
 	int testLoop = 10;
 

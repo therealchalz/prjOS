@@ -7,6 +7,6 @@
 
 void cpuInit();
 void cpuPrintInfo();
-void cpu_barf();
+void cpuBarf();
 
 #endif /* CPU_H_ */

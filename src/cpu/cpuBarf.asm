@@ -4,10 +4,10 @@
 
 	.thumb
 	.syntax unified
-	.global	cpu_barf
+	.global	cpuBarf
 
 
-cpu_barf:
+cpuBarf:
 		/* Store all the registers before we trash them */
 		stmfd		sp!, {r0-r12,lr}
 

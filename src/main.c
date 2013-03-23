@@ -7,7 +7,9 @@
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
-	//TODO: something useful
+	cpuBarf();
+	printCurrentStackTop(12);
+	bwprintf("Driver Crash: file: %s, line: %u", filename, line);
 }
 #endif
 
@@ -23,7 +25,7 @@ int main(void) {
 	bwprintf("\n\n\n********Kernel Starting********\n\r\n");
 	cpuPrintInfo();
 
-	cpu_barf();
+	cpuBarf();
 
 	int testLoop = 10;
 

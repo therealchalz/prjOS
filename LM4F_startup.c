@@ -276,6 +276,9 @@ void rst_handler(void){
 
 // NMI Exception handler code NVIC 2
 void nmi_handler(void){
+	cpuBarf();
+	printCurrentStackTop(12);
+	bwprintf("NMI Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
     while(1){
     }
@@ -283,6 +286,9 @@ void nmi_handler(void){
 
 // Hard fault handler code NVIC 3
 void hardfault_handler(void){
+	cpuBarf();
+	printCurrentStackTop(12);
+	bwprintf("Hardfault Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
     while(1){
     }
@@ -290,6 +296,9 @@ void hardfault_handler(void){
 
 // Empty handler used as default.
 void empty_def_handler(void){
+	cpuBarf();
+	printCurrentStackTop(12);
+	bwprintf("Empty Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
     while(1){
     }

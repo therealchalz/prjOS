@@ -4,7 +4,7 @@
  * For Stellaris Launchpad
  */
 
-#include <uart.h>
+#include <hardware_dependent/uart.h>
 #include <inc/hw_types.h>
 #include <driverlib/sysctl.h>
 #include <inc/hw_memmap.h>

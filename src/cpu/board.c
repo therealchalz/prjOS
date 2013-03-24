@@ -4,7 +4,7 @@
  * For Stellaris Launchpad
  */
 
-#include <board.h>
+#include <hardware_dependent/board.h>
 #include <inc/hw_memmap.h>
 #include <inc/hw_types.h>
 #include <driverlib/sysctl.h>

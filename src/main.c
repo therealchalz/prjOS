@@ -1,7 +1,8 @@
-#include <uart.h>
+#include <hardware_dependent/uart.h>
 #include <bwio.h>
-#include <cpu.h>
-#include <board.h>
+#include <hardware_dependent/cpu.h>
+#include <hardware_dependent/cpu_defs.h>
+#include <hardware_dependent/board.h>
 #include <debug.h>
 
 
@@ -13,6 +14,22 @@ void __error__(char *filename, unsigned long line) {
 }
 #endif
 
+void simpleTask() {
+	bwprintf("Simple Task Running...");
+}
+
+TaskDescriptor* createFirstTask(TaskDescriptorList *tds) {
+	TaskCreateParameters params;
+	setupDefaultCreateParameters(&params, 1, 0, &simpleTask);
+	return createTask(tds, &params);
+}
+
+TaskDescriptor* schedule(TaskDescriptor* tds, TaskDescriptor* current) {
+	TaskDescriptor* next = current->nextTask;
+	//bwprintf("Scheduler: Next task is:\n");
+	//printTd(next, 17);
+	return next;
+}
 
 int main(void) {
 
@@ -25,13 +42,30 @@ int main(void) {
 	bwprintf("\n\n\n********Kernel Starting********\n\r\n");
 	cpuPrintInfo();
 
-	cpuBarf();
+	//Put the TDs on the kernel stack
+	TaskDescriptor taskDescriptors[KERNEL_MAX_NUMBER_OF_TASKS];
+	TaskDescriptorList taskList;
+	taskList.tds = taskDescriptors;
+	taskList.count = KERNEL_MAX_NUMBER_OF_TASKS;
 
-	int testLoop = 10;
+	initializeTds(taskList);
+
+
+	TaskDescriptor* nextTask;
+	//Create first task
+	TaskDescriptor* currentTask = createFirstTask(&taskList);
+
+	int testLoop = 4;
 
 	while(testLoop > 0)
 	{
 		testLoop--;
+
+		//TODO
+		nextTask = schedule(taskDescriptors, currentTask);
+		//TaskSwitch(nextTask);
+
+		bwprintf("\r\nKernel Running\r\n");
 
 		boardSetIndicatorLED(1);
 		long l = 0x000fffff;
@@ -43,9 +77,10 @@ int main(void) {
 		while (l > 0) {
 			l--;
 		}
-		bwprintf("Running!\r\n");
 	}
+	bwprintf("System Halted\n\r");
+	while(1) {}
 
-	return 420;
+	return 0x420;
 }
 

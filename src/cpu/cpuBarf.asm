@@ -66,6 +66,7 @@ cpuBarf:
 		/* SP */
 		ADR       	R0, $C$SL14
 		MOV			R1, SP
+		ADD			R1, R1, #54
 		BL        	bwprintf
 		/* LR */
 		ADR       	R0, $C$SL15

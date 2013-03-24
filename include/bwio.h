@@ -3,7 +3,7 @@
  *
  */
 
-#include <uart.h>
+#include <hardware_dependent/uart.h>
 
 #ifndef  BWIO_H_
 #define  BWIO_H_

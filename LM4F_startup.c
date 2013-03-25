@@ -276,7 +276,6 @@ void rst_handler(void){
 	// to start the main() method!
 	// There you go!
 	main();
-	long s = 0x420;
 	cpuBarf();
 	bwprintf("main() returned\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.

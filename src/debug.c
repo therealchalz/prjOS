@@ -4,6 +4,7 @@
 
 #include <debug.h>
 #include <bwio.h>
+#include <task.h>
 
 // byteGroupSize={1,2,4}
 // showAsLittleEndian={0,!0}
@@ -75,4 +76,13 @@ void printCurrentStackTop(int numItems) {
 	int *px = &x;
 	int skipAmount = 5;
 	printStackTop((char*)(px+skipAmount), numItems);
+}
+void printCEnvironmentSettings() {
+	bwprintf("Current Environment: \r\n");
+	bwprintf("Size of int: %d\r\n", sizeof(int));
+	bwprintf("Size of long: %d\r\n", sizeof(long));
+	bwprintf("Size of float: %d\r\n", sizeof(float));
+	bwprintf("Size of double: %d\r\n", sizeof(double));
+	bwprintf("Size of (void*): %d\r\n", sizeof(int*));
+	bwprintf("Size of task descriptor: %d\n\r", sizeof(TaskDescriptor));
 }

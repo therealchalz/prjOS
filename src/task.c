@@ -8,6 +8,7 @@
 #include <bwio.h>
 #include <hardware_dependent/cpu.h>
 #include <string.h>
+#include <syscall.h>
 
 void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int parentId, void* taskEntry) {
 	memset(params, 0, sizeof(TaskCreateParameters));
@@ -36,6 +37,20 @@ void printTd(TaskDescriptor* td, int stackAmount) {
 	bwprintf("  Stack Location: %x\r\n", td->stackPointer);
 	bwprintf("  TOS:\r\n");
 	printStackTop((char*)td->stackPointer, stackAmount);
+}
+
+void printSystemCall(SystemCall* sc) {
+	bwprintf("SystemCall: %d\n\r", sc->syscall);
+	if (sc->syscall == SYSCALL_HARDWARE_CALL) {
+		bwprintf("  Hardware interrupt; no call data\n\r");
+	} else {
+		bwprintf("  Parameter 1: %d\n\r", sc->param1);
+		bwprintf("  Parameter 2: %d\n\r", sc->param2);
+		bwprintf("  Parameter 3: %d\n\r", sc->param3);
+		bwprintf("  Parameter 4: %d\n\r", sc->param4);
+		bwprintf("  Parameter 5: %d\n\r", sc->param5);
+		bwprintf("  Parameter 6: %d\n\r", sc->param6);
+	}
 }
 
 TaskDescriptor* createTask(TaskDescriptorList *tds, const TaskCreateParameters *parms) {

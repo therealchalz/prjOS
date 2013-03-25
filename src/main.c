@@ -12,13 +12,23 @@ void __error__(char *filename, unsigned long line) {
 	bwprintf("Driver Crash: file: %s, line: %u", filename, line);
 	//Keep this at the end because it may cause a hard fault
 	printCurrentStackTop(16);
+	while(1) {}
 }
 #endif
 
+int testParameterFunction(int p1, int p2, int p3, int p4, int p5, int p6) {
+	int ret;
+	asm (svcArg(1));
+	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
+	return ret;
+}
+
 void simpleTask() {
+	bwprintf("Simple Task Starting...\n\r");
 	while (1) {
-		bwprintf("Simple Task Running...");
-		asm (svcArg(0));
+		bwprintf("Simple Task Running...\r\n");
+		int ret = testParameterFunction(10,20,30,40,50,60);
+		bwprintf("Got return value: %d\r\n", ret);
 	}
 }
 
@@ -39,6 +49,8 @@ void TaskSwitch(TaskDescriptor* t) {
 	asm (svcArg(0));
 }
 
+
+
 int main(void) {
 
 	cpuInit();
@@ -49,6 +61,7 @@ int main(void) {
 
 	bwprintf("\n\n\n********Kernel Starting********\n\r\n");
 	cpuPrintInfo();
+	printCEnvironmentSettings();
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_MAX_NUMBER_OF_TASKS];
@@ -65,18 +78,22 @@ int main(void) {
 
 	int testLoop = 4;
 
-	while(testLoop > 0)
+	while(testLoop >= 0)
 	{
 		testLoop--;
 
 		//contextSwitch(currentTask);
 		//cpuBarf();
 		//asm (svcArg(0));
+		bwprintf("Kernel switching to task...\r\n");
 		TaskSwitch(currentTask);
+		bwprintf("Kernel running...\r\n");
+
+		printSystemCall(&currentTask->systemCall);
+
+		currentTask->systemCall.returnValue = testLoop+1;
+
 		currentTask = schedule(taskDescriptors, currentTask);
-
-
-		bwprintf("\r\nKernel Running\r\n");
 
 		boardSetIndicatorLED(1);
 		long l = 0x000fffff;

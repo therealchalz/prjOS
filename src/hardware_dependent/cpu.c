@@ -37,6 +37,15 @@ int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms) {
 	//Need to set up stack like this:
 	//R4,R5,R6,R7,R8,R9,R10,R11,LR(EXC_RETURN),R0,R1,R2,R3,R12,LR(Pre exception),PC(Pre exception),xPSR(Pre exception)
 	int* newStack = stackLocation;
+	//push on 6 dummy things - the context switch expects the compiler
+	//to push the syscall parameters onto the stack.  If we don't make
+	//dummy space here, if we were to call a syscall as soon as our task starts
+	//and the syscall takes no arguments, then the context switch could go
+	//past the end of our stack looking for the parameters
+	int i=0;
+	for (; i<6; i++) {
+		*(--newStack) = 0x00000000;
+	}
 	//push 17 things on the stack
 	*(--newStack) = 0x01000000;
 	*(--newStack) = ((int)(parms->cpuSpecific.startFunction));

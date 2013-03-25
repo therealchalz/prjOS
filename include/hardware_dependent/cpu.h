@@ -15,4 +15,6 @@ void cpuBarf();
 int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms);
 void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startFunction);
 
+void contextSwitch(TaskDescriptor *t);
+
 #endif /* CPU_H_ */

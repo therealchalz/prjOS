@@ -7,9 +7,10 @@
 #include <debug.h>
 #include <bwio.h>
 #include <hardware_dependent/cpu.h>
+#include <string.h>
 
 void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int parentId, void* taskEntry) {
-	memset(0, &params, sizeof(params));
+	memset(params, 0, sizeof(TaskCreateParameters));
 
 	params->taskId = taskId;
 	params->parentId = parentId;
@@ -21,7 +22,7 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int 
 void initializeTds(TaskDescriptorList tds) {
 	memset(tds.tds, 0, tds.count*sizeof(TaskDescriptor));
 
-	int stackOffset = 0;
+	int stackOffset = KERNEL_TASK_DEFAULT_STACK_SIZE;
 	int i;
 	for (i=0; i<tds.count; i++) {
 		tds.tds[i].stackPointer = (int*)(STACK_BASE - stackOffset);

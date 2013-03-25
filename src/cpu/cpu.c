@@ -29,7 +29,7 @@ void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startF
 		params->regs[r] = r;
 
 	params->IAPSR = 0;
-	params->exceptionReturn = 0xFFFFFFFD;
+	params->exceptionReturn = 0xFFFFFFFD;	//Return to Thread/PSP mode
 	params->startFunction = startFunction;
 }
 

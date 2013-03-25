@@ -6,6 +6,11 @@
 #ifndef CPU_DEP_H_
 #define CPU_DEP_H_
 
+/* Macros for putting out the SVC */
+#define changeArgToString(x) #x
+#define macroToString(x) changeArgToString(x)
+#define svcArg(a) "		SVC #"macroToString(a)"\n"
+
 #define STACK_BASE						(0x20000000+0x8000)
 #define KERNEL_MAX_NUMBER_OF_TASKS		(8)
 #define KERNEL_TASK_DEFAULT_STACK_SIZE	(0x800)

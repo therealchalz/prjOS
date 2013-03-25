@@ -32,9 +32,9 @@
 * Modified by:	Charles Hache <chache@brood.ca>
 */
 
-#include <hardware_dependent/cpu.h>
 #include <debug.h>
 #include <bwio.h>
+#include <hardware_dependent/cpu.h>
 
 //-----------------------------------------------------------------------------
 // 							 Functions declarations
@@ -89,7 +89,7 @@ void(* myvectors[])(void) = {
     0,						// Reserved							8
     0,						// Reserved							9
     0,						// Reserved							10
-    empty_def_handler,		// SV call							11
+    contextSwitch,			// SV call							11
     empty_def_handler,		// Debug monitor					12
     0,						// Reserved							13
     empty_def_handler,		// PendSV							14
@@ -296,8 +296,8 @@ void nmi_handler(void){
 
 // Hard fault handler code NVIC 3
 void hardfault_handler(void){
-	cpuBarf();
-	printCurrentStackTop(12);
+	//cpuBarf();
+	//printCurrentStackTop(12);
 	bwprintf("Hardfault Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
     while(1){

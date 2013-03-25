@@ -4,12 +4,14 @@
 
 	.thumb
 	.syntax unified
+	.thumb_func
+	.section .text.cpuBarf
 	.global	cpuBarf
 
 
 cpuBarf:
 		/* Store all the registers before we trash them */
-		stmfd		sp!, {r0-r12,lr}
+		PUSH		{r0-r12,lr}
 
 		/* R0 */
 		ADR       	R0, $C$SL1

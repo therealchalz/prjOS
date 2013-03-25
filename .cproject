@@ -34,9 +34,10 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.968004267" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/prjLibc}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/che/rtos/stellaris/stellarisware"/>
 								</option>
-								<option id="gnu.c.compiler.option.misc.other.2109978098" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -ffunction-sections -fdata-sections" valueType="string"/>
+								<option id="gnu.c.compiler.option.misc.other.2109978098" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -ffunction-sections -fdata-sections -save-temps" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1495562712" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.2004000340" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -46,9 +47,11 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.223504021" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker">
 								<option id="gnu.c.link.option.libs.1447221067" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="driver-cm4f"/>
+									<listOptionValue builtIn="false" value="prjLibc"/>
 								</option>
 								<option id="gnu.c.link.option.paths.1689635337" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/home/che/rtos/stellaris/stellarisware/driverlib/gcc-cm4f"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/prjLibc/Debug}&quot;"/>
 								</option>
 								<option id="gnu.c.link.option.ldflags.1227813746" name="Linker flags" superClass="gnu.c.link.option.ldflags" value="-Wl,--static,--gc-sections,-T../LM4F.ld -mthumb -mcpu=cortex-m4" valueType="string"/>
 								<option id="gnu.c.link.option.other.1721953837" name="Other options (-Xlinker [option])" superClass="gnu.c.link.option.other" valueType="stringList">

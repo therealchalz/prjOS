@@ -9,13 +9,17 @@
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
 	cpuBarf();
-	printCurrentStackTop(12);
 	bwprintf("Driver Crash: file: %s, line: %u", filename, line);
+	//Keep this at the end because it may cause a hard fault
+	printCurrentStackTop(16);
 }
 #endif
 
 void simpleTask() {
-	bwprintf("Simple Task Running...");
+	while (1) {
+		bwprintf("Simple Task Running...");
+		asm (svcArg(0));
+	}
 }
 
 TaskDescriptor* createFirstTask(TaskDescriptorList *tds) {
@@ -26,9 +30,13 @@ TaskDescriptor* createFirstTask(TaskDescriptorList *tds) {
 
 TaskDescriptor* schedule(TaskDescriptor* tds, TaskDescriptor* current) {
 	TaskDescriptor* next = current->nextTask;
-	//bwprintf("Scheduler: Next task is:\n");
+	//bwprintf("Scheduler: Next task is:\r\n");
 	//printTd(next, 17);
 	return next;
+}
+void TaskSwitch(TaskDescriptor* t) {
+	asm (" MOV R0, %[td]": :[td] "r" (t));
+	asm (svcArg(0));
 }
 
 int main(void) {
@@ -51,9 +59,9 @@ int main(void) {
 	initializeTds(taskList);
 
 
-	TaskDescriptor* nextTask;
 	//Create first task
 	TaskDescriptor* currentTask = createFirstTask(&taskList);
+	currentTask->nextTask = currentTask;
 
 	int testLoop = 4;
 
@@ -61,9 +69,12 @@ int main(void) {
 	{
 		testLoop--;
 
-		//TODO
-		nextTask = schedule(taskDescriptors, currentTask);
-		//TaskSwitch(nextTask);
+		//contextSwitch(currentTask);
+		//cpuBarf();
+		//asm (svcArg(0));
+		TaskSwitch(currentTask);
+		currentTask = schedule(taskDescriptors, currentTask);
+
 
 		bwprintf("\r\nKernel Running\r\n");
 
@@ -77,6 +88,7 @@ int main(void) {
 		while (l > 0) {
 			l--;
 		}
+		boardSetIndicatorLED(0);
 	}
 	bwprintf("System Halted\n\r");
 	while(1) {}

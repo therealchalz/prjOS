@@ -4,7 +4,7 @@
 #include <hardware_dependent/cpu_defs.h>
 #include <hardware_dependent/board.h>
 #include <debug.h>
-
+#include <scheduler.h>
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -32,24 +32,16 @@ void simpleTask() {
 	}
 }
 
-TaskDescriptor* createFirstTask(TaskDescriptorList *tds) {
+TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count) {
 	TaskCreateParameters params;
 	setupDefaultCreateParameters(&params, 1, 0, &simpleTask);
-	return createTask(tds, &params);
+	return createTask(tds, count, &params);
 }
 
-TaskDescriptor* schedule(TaskDescriptor* tds, TaskDescriptor* current) {
-	TaskDescriptor* next = current->nextTask;
-	//bwprintf("Scheduler: Next task is:\r\n");
-	//printTd(next, 17);
-	return next;
-}
 void TaskSwitch(TaskDescriptor* t) {
 	asm (" MOV R0, %[td]": :[td] "r" (t));
 	asm (svcArg(0));
 }
-
-
 
 int main(void) {
 
@@ -65,16 +57,19 @@ int main(void) {
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_MAX_NUMBER_OF_TASKS];
-	TaskDescriptorList taskList;
-	taskList.tds = taskDescriptors;
-	taskList.count = KERNEL_MAX_NUMBER_OF_TASKS;
+	initializeTds(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS);
 
-	initializeTds(taskList);
-
+	bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor));
+	//Scheduler stuff
+	SchedulerStructure schedStruct;
+	schedStruct.count = KERNEL_MAX_NUMBER_OF_TASKS;
+	schedStruct.tds = taskDescriptors;
 
 	//Create first task
-	TaskDescriptor* currentTask = createFirstTask(&taskList);
+	TaskDescriptor* currentTask = createFirstTask(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS);
 	currentTask->nextTask = currentTask;
+
+	schedStruct.lastRun = currentTask;
 
 	int testLoop = 4;
 
@@ -89,11 +84,11 @@ int main(void) {
 		TaskSwitch(currentTask);
 		bwprintf("Kernel running...\r\n");
 
-		printSystemCall(&currentTask->systemCall);
+		//printSystemCall(&currentTask->systemCall);
 
 		currentTask->systemCall.returnValue = testLoop+1;
 
-		currentTask = schedule(taskDescriptors, currentTask);
+		currentTask = schedule(&schedStruct);
 
 		boardSetIndicatorLED(1);
 		long l = 0x000fffff;

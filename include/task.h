@@ -7,6 +7,16 @@
 
 #include <hardware_dependent/cpu_defs.h>
 
+#define TASKS_STATE_INVALID		0
+#define TASKS_STATE_RUNNING		1
+#define TASKS_STATE_EXITED		2
+#define TASKS_STATE_RCVD_BLK	3
+#define TASKS_STATE_SEND_BLK	4
+#define TASKS_STATE_RPLY_BLK	5
+#define TASKS_STATE_EVT_BLK		6
+
+#define TASKS_MAX_PRIORITY	    7
+
 typedef struct SystemCall {
 	int syscall;	//0 means hardware interrupted, anything else = syscall
 	int returnValue;
@@ -30,23 +40,19 @@ typedef struct TaskDescriptor {
 	struct TaskDescriptor* nextTask;
 } TaskDescriptor;
 
-typedef struct TaskDescriptorList {
-	TaskDescriptor* tds;
-	int count;
-} TaskDescriptorList;
-
 typedef struct TaskCreateParameters {
 	unsigned int taskId;		//OS-assigned task id
 	unsigned int parentId;		//OS-assigned task parent
 	int* stackPointer;
+	int priority;
 	//Hardware-dependent parameters
 	TaskCpuCreateParameters cpuSpecific;
 } TaskCreateParameters;
 
-void initializeTds(TaskDescriptorList tds);
+void initializeTds(TaskDescriptor* tds, int count);
 void printTd(TaskDescriptor* td, int stackAmount);
 void printSystemCall(SystemCall* sc);
-TaskDescriptor* createTask(TaskDescriptorList *tds, const TaskCreateParameters *parms);
+TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms);
 void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int parentId, void* taskEntry);
 
 #endif /* TASK_H_ */

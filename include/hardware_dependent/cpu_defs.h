@@ -12,7 +12,8 @@
 #define svcArg(a) "		SVC #"macroToString(a)"\n"
 
 #define STACK_BASE						(0x20000000+0x8000)
-#define KERNEL_MAX_NUMBER_OF_TASKS		(8)
+#define KERNEL_STACK_SIZE				(0x1000)
+#define KERNEL_MAX_NUMBER_OF_TASKS		(14)
 #define KERNEL_TASK_DEFAULT_STACK_SIZE	(0x800)
 
 typedef struct TaskCpuCreateParameters {

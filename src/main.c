@@ -5,6 +5,8 @@
 #include <hardware_dependent/board.h>
 #include <debug.h>
 #include <scheduler.h>
+#include <syscall.h>
+#include <sys_syscall.h>
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -25,6 +27,7 @@ int testParameterFunction(int p1, int p2, int p3, int p4, int p5, int p6) {
 
 void simpleTask() {
 	bwprintf("Simple Task Starting...\n\r");
+	bwprintf("My Task ID is: %d and my parent is %d\r\n", getTid(), getParentTid());
 	while (1) {
 		bwprintf("Simple Task Running...\r\n");
 		int ret = testParameterFunction(10,20,30,40,50,60);
@@ -41,6 +44,24 @@ TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count) {
 void TaskSwitch(TaskDescriptor* t) {
 	asm (" MOV R0, %[td]": :[td] "r" (t));
 	asm (svcArg(0));
+}
+
+void handleSyscall(TaskDescriptor* t) {
+	//TODO: if this TD has nothing to to, look for one that has waiting work
+	if (t->systemCall.handled) {
+		return;
+	}
+	switch (t->systemCall.syscall) {
+	case SYSCALL_HARDWARE_CALL:
+		break;
+	case SYSCALL_GET_TID:
+		t->systemCall.returnValue = sys_getTid(t);
+		break;
+	case SYSCALL_GET_PARENT_TID:
+		t->systemCall.returnValue = sys_getParentTid(t);
+		break;
+	}
+	t->systemCall.handled = 1;
 }
 
 int main(void) {
@@ -71,7 +92,7 @@ int main(void) {
 
 	schedStruct.lastRun = currentTask;
 
-	int testLoop = 4;
+	int testLoop = 6;
 
 	while(testLoop >= 0)
 	{
@@ -84,9 +105,7 @@ int main(void) {
 		TaskSwitch(currentTask);
 		bwprintf("Kernel running...\r\n");
 
-		//printSystemCall(&currentTask->systemCall);
-
-		currentTask->systemCall.returnValue = testLoop+1;
+		handleSyscall(currentTask);
 
 		currentTask = schedule(&schedStruct);
 

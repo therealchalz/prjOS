@@ -7,5 +7,6 @@
 
 int sys_getParentTid(TaskDescriptor* active);
 int sys_getTid(TaskDescriptor* active);
+int sys_yield(TaskDescriptor* active);
 
 #endif /* SYS_SYSCALL_H_ */

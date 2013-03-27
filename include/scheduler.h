@@ -6,14 +6,21 @@
 #define SCHEDULER_H_
 
 #include <task.h>
+#include <hardware_dependent/cpu_defs.h>
+
+typedef struct SchedulerTask {
+	TaskDescriptor* td;
+	struct SchedulerTask* next;
+} SchedulerTask;
 
 typedef struct SchedulerStructure {
-	TaskDescriptor* tds;
-	int count;
-
-	struct TaskDescriptor* lastRun;
+	SchedulerTask* queueHeads[TASKS_MAX_PRIORITY];
+	SchedulerTask* queueTails[TASKS_MAX_PRIORITY];
+	SchedulerTask allTasks[KERNEL_MAX_NUMBER_OF_TASKS];
 } SchedulerStructure;
 
+void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds);
+void schedulerAdd(SchedulerStructure* schedStruct, TaskDescriptor* td);
 TaskDescriptor* schedule(SchedulerStructure* schedStruct);
 
 #endif /* SCHEDULER_H_ */

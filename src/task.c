@@ -57,6 +57,16 @@ void printSystemCall(SystemCall* sc) {
 	}
 }
 
+int isTaskReady(TaskDescriptor* td) {
+	int ret = 0;
+	switch (td->state) {
+	//add other states as required
+	case TASKS_STATE_RUNNING:
+		ret = 1;
+		break;
+	}
+}
+
 TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms) {
 	// Search for available task descriptor
 	int i;

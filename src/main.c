@@ -30,8 +30,7 @@ void simpleTask() {
 	bwprintf("My Task ID is: %d and my parent is %d\r\n", getTid(), getParentTid());
 	while (1) {
 		bwprintf("Simple Task Running...\r\n");
-		int ret = testParameterFunction(10,20,30,40,50,60);
-		bwprintf("Got return value: %d\r\n", ret);
+		yield();
 	}
 }
 
@@ -60,6 +59,9 @@ void handleSyscall(TaskDescriptor* t) {
 	case SYSCALL_GET_PARENT_TID:
 		t->systemCall.returnValue = sys_getParentTid(t);
 		break;
+	case SYSCALL_YIELD:
+		t->systemCall.returnValue = sys_yield(t);
+		break;
 	}
 	t->systemCall.handled = 1;
 }
@@ -83,14 +85,13 @@ int main(void) {
 	bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor));
 	//Scheduler stuff
 	SchedulerStructure schedStruct;
-	schedStruct.count = KERNEL_MAX_NUMBER_OF_TASKS;
-	schedStruct.tds = taskDescriptors;
+	schedulerInit(&schedStruct, taskDescriptors);
 
 	//Create first task
 	TaskDescriptor* currentTask = createFirstTask(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS);
 	currentTask->nextTask = currentTask;
 
-	schedStruct.lastRun = currentTask;
+	schedulerAdd(&schedStruct, currentTask);
 
 	int testLoop = 6;
 
@@ -98,16 +99,15 @@ int main(void) {
 	{
 		testLoop--;
 
-		//contextSwitch(currentTask);
-		//cpuBarf();
-		//asm (svcArg(0));
-		bwprintf("Kernel switching to task...\r\n");
-		TaskSwitch(currentTask);
-		bwprintf("Kernel running...\r\n");
-
-		handleSyscall(currentTask);
-
 		currentTask = schedule(&schedStruct);
+
+		if (currentTask != 0) {
+			schedulerAdd(&schedStruct, currentTask);
+			bwprintf("Kernel switching to task...\r\n");
+			TaskSwitch(currentTask);
+			bwprintf("Kernel running...\r\n");
+			handleSyscall(currentTask);
+		}
 
 		boardSetIndicatorLED(1);
 		long l = 0x000fffff;

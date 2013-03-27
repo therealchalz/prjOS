@@ -7,6 +7,8 @@
 #include <scheduler.h>
 #include <syscall.h>
 #include <sys_syscall.h>
+#include <kernel_data.h>
+#include <string.h>
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -25,18 +27,43 @@ int testParameterFunction(int p1, int p2, int p3, int p4, int p5, int p6) {
 	return ret;
 }
 
-void simpleTask() {
-	bwprintf("Simple Task Starting...\n\r");
-	bwprintf("My Task ID is: %d and my parent is %d\r\n", getTid(), getParentTid());
-	while (1) {
-		bwprintf("Simple Task Running...\r\n");
+void testTask() {
+	int tid = getTid();
+	int pid = getParentTid();
+
+	bwprintf("Task Running.  TaskID: %d.  Parent: %d\n\r", tid, pid);
+
+	yield();
+
+	bwprintf("Task Running.  TaskID: %d.  Parent: %d\n\r", tid, pid);
+
+	threadExit();
+}
+
+void firstUserTask() {
+	bwprintf("First User Task Created %d\n\r", create(2, &testTask));
+	bwprintf("First User Task Created %d\n\r", create(2, &testTask));
+	bwprintf("First User Task Created %d\n\r", create(0, &testTask));
+	bwprintf("First User Task Created %d\n\r", create(0, &testTask));
+	bwprintf("First Exiting\n\r");
+	threadExit();
+}
+
+void firstTask() {
+	bwprintf("Init Task Starting...\n\r");
+	bwprintf("Init created %d\n\r", create(1, &firstUserTask));
+	changePriority(TASKS_MAX_PRIORITY-1);
+	while(1) {
 		yield();
 	}
 }
 
 TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count) {
 	TaskCreateParameters params;
-	setupDefaultCreateParameters(&params, 1, 0, &simpleTask);
+	setupDefaultCreateParameters(&params, &firstTask);
+	params.parentId = 0;
+	params.taskId = 1;
+	params.priority = 0;
 	return createTask(tds, count, &params);
 }
 
@@ -45,7 +72,7 @@ void TaskSwitch(TaskDescriptor* t) {
 	asm (svcArg(0));
 }
 
-void handleSyscall(TaskDescriptor* t) {
+void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	//TODO: if this TD has nothing to to, look for one that has waiting work
 	if (t->systemCall.handled) {
 		return;
@@ -62,8 +89,22 @@ void handleSyscall(TaskDescriptor* t) {
 	case SYSCALL_YIELD:
 		t->systemCall.returnValue = sys_yield(t);
 		break;
-	case SYSCALL_EXIT:
-		t->systemCall.returnValue = sys_exit(t);
+	case SYSCALL_THREADEXIT:
+		t->systemCall.returnValue = sys_threadexit(t);
+		break;
+	case SYSCALL_CREATE:
+		//This one receives special attention
+		{
+			TaskCreateParameters params;
+			sys_create(t, &params);
+			params.taskId = kernelData->nextTaskId++;
+			TaskDescriptor* theNewTask = createTask(kernelData->taskDescriptorList, kernelData->tdCount, &params);
+			schedulerAdd(kernelData->schedulerStructure, theNewTask);
+			t->systemCall.returnValue = theNewTask->taskId;
+		}
+		break;
+	case SYSCALL_CHANGEPRIORITY:
+		t->systemCall.returnValue = sys_changePriority(t);
 		break;
 	}
 	t->systemCall.handled = 1;
@@ -90,37 +131,47 @@ int main(void) {
 	SchedulerStructure schedStruct;
 	schedulerInit(&schedStruct, taskDescriptors);
 
+	KernelData kernelData;
+	memset(&kernelData, 0, sizeof(KernelData));
+	kernelData.taskDescriptorList = taskDescriptors;
+	kernelData.tdCount = KERNEL_MAX_NUMBER_OF_TASKS;
+	kernelData.nextTaskId = 2;
+	kernelData.schedulerStructure = &schedStruct;
+
 	//Create first task
 	TaskDescriptor* currentTask = createFirstTask(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS);
-	currentTask->nextTask = currentTask;
 
 	schedulerAdd(&schedStruct, currentTask);
 
-	int testLoop = 6;
+	int testLoop = 100;
 
 	while(testLoop >= 0)
 	{
 		testLoop--;
-
+		//bwprintf("Getting task to schedule...\n\r");
+		//schedulerPrintTasks(&schedStruct);
 		currentTask = schedule(&schedStruct);
+		//bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
 
 		if (currentTask != 0) {
-			bwprintf("Kernel switching to task...\r\n");
+			//bwprintf("Kernel switching to task...\r\n");
 			TaskSwitch(currentTask);
-			bwprintf("Kernel running...\r\n");
-			handleSyscall(currentTask);
+			//bwprintf("Kernel running...\r\n");
+			handleSyscall(currentTask, &kernelData);
 			if (!hasExited(currentTask)) {
 				schedulerAdd(&schedStruct, currentTask);
+			} else {
+				//bwprintf("Not adding task to scheduler - it has quit\n\r");
 			}
 		}
 
 		boardSetIndicatorLED(1);
-		long l = 0x000fffff;
+		long l = 0x0000ffff;
 		while (l > 0) {
 			l--;
 		}
 		boardSetIndicatorLED(0);
-		l = 0x000fffff;
+		l = 0x0000ffff;
 		while (l > 0) {
 			l--;
 		}

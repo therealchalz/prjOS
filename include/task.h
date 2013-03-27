@@ -35,13 +35,12 @@ typedef struct SystemCall {
 } SystemCall;
 
 typedef struct TaskDescriptor {
-	int taskId;
-	int parentId;
+	unsigned int taskId;
+	unsigned int parentId;
 	int* stackPointer;
 	SystemCall systemCall;
-	int state;
-	int priority;
-	struct TaskDescriptor* nextTask;
+	unsigned int state;
+	unsigned int priority;
 } TaskDescriptor;
 
 typedef struct TaskCreateParameters {
@@ -57,9 +56,9 @@ void initializeTds(TaskDescriptor* tds, int count);
 void printTd(TaskDescriptor* td, int stackAmount);
 void printSystemCall(SystemCall* sc);
 TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms);
-void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int parentId, void* taskEntry);
+void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry);
 int isTaskReady(TaskDescriptor* td);
-void threadExit(TaskDescriptor* td);
+void taskExit(TaskDescriptor* td);
 int hasExited(TaskDescriptor* td);
 
 #endif /* TASK_H_ */

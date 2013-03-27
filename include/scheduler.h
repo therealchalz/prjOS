@@ -21,6 +21,7 @@ typedef struct SchedulerStructure {
 
 void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds);
 void schedulerAdd(SchedulerStructure* schedStruct, TaskDescriptor* td);
+void schedulerPrintTasks(SchedulerStructure* schedStruct);
 TaskDescriptor* schedule(SchedulerStructure* schedStruct);
 
 #endif /* SCHEDULER_H_ */

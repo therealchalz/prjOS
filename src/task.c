@@ -10,13 +10,10 @@
 #include <string.h>
 #include <syscall.h>
 
-void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int parentId, void* taskEntry) {
+void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry) {
 	memset(params, 0, sizeof(TaskCreateParameters));
 
-	params->taskId = taskId;
-	params->parentId = parentId;
 	params->stackPointer = 0;	//use default
-	params->priority = 0;
 
 	cpuSetupTaskDefaultParameters(&(params->cpuSpecific), taskEntry);
 }
@@ -67,7 +64,7 @@ int isTaskReady(TaskDescriptor* td) {
 	}
 }
 
-void threadExit(TaskDescriptor* td) {
+void taskExit(TaskDescriptor* td) {
 	td->state = TASKS_STATE_EXITED;
 }
 
@@ -99,7 +96,7 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 		ret->state = TASKS_STATE_RUNNING;
 		ret->priority = parms->priority;
 
-		printTd(ret,17);
+		//printTd(ret,17);
 	} else {
 		bwprintf("PANIC: Ran out task descriptor space");
 		while(1) {

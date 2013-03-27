@@ -6,15 +6,15 @@
 #include <syscall.h>
 #include <task.h>
 
-int exit() {
+int threadExit() {
 	int ret;
-	asm (svcArg(SYSCALL_EXIT));
+	asm (svcArg(SYSCALL_THREADEXIT));
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_exit(TaskDescriptor* active){
-	threadExit(active);
+int sys_threadexit(TaskDescriptor* active){
+	taskExit(active);
 	return 0;
 }
 

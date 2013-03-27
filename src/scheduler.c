@@ -42,14 +42,26 @@ void schedulerAdd(SchedulerStructure* schedStruct, TaskDescriptor* td) {
 	//Not checking priority - it should be enforced further up
 	int pri = td->priority;
 	SchedulerTask* schedTask = getSchedulerTask(schedStruct, td);
-
+	schedTask->next = 0;
 	if (schedStruct->queueTails[pri] == 0) {
 		schedStruct->queueHeads[pri] = schedTask;
-		schedTask->next = 0;
 		schedStruct->queueTails[pri] = schedTask;
 	} else {
 		schedStruct->queueTails[pri]->next = schedTask;
 		schedStruct->queueTails[pri] = schedTask;
+	}
+}
+void schedulerPrintTasks(SchedulerStructure* schedStruct) {
+	int i;
+	for (i=0; i < TASKS_MAX_PRIORITY; i++) {
+		int count =0;
+		SchedulerTask* current;
+		current = schedStruct->queueHeads[i];
+		while (current) {
+			current = current->next;
+			count++;
+		}
+		bwprintf("There are %d priority %d tasks.\n\r", count, i+1);
 	}
 }
 //Returns 0 if no tasks are ready.  best to leave an idle task going...

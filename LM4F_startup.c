@@ -295,8 +295,8 @@ void nmi_handler(void){
 
 // Hard fault handler code NVIC 3
 void hardfault_handler(void){
-	//cpuBarf();
-	//printCurrentStackTop(12);
+	cpuBarf();
+	printCurrentStackTop(12);
 	bwprintf("Hardfault Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
     while(1){

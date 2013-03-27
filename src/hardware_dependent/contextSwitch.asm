@@ -97,7 +97,7 @@ taskToKernel:
 		# Do nothing...
 syscall:
 		# Find the syscall parameters on the stack (saved from the
-		# registers by the exception)
+		# registers by the compiler/gcc)
 		# R0
 		LDR			R2, [R1, #36]
 		STR			R2, [R0, #24]

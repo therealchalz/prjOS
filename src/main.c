@@ -62,6 +62,9 @@ void handleSyscall(TaskDescriptor* t) {
 	case SYSCALL_YIELD:
 		t->systemCall.returnValue = sys_yield(t);
 		break;
+	case SYSCALL_EXIT:
+		t->systemCall.returnValue = sys_exit(t);
+		break;
 	}
 	t->systemCall.handled = 1;
 }
@@ -102,11 +105,13 @@ int main(void) {
 		currentTask = schedule(&schedStruct);
 
 		if (currentTask != 0) {
-			schedulerAdd(&schedStruct, currentTask);
 			bwprintf("Kernel switching to task...\r\n");
 			TaskSwitch(currentTask);
 			bwprintf("Kernel running...\r\n");
 			handleSyscall(currentTask);
+			if (!hasExited(currentTask)) {
+				schedulerAdd(&schedStruct, currentTask);
+			}
 		}
 
 		boardSetIndicatorLED(1);

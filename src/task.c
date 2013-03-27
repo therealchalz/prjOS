@@ -67,6 +67,16 @@ int isTaskReady(TaskDescriptor* td) {
 	}
 }
 
+void threadExit(TaskDescriptor* td) {
+	td->state = TASKS_STATE_EXITED;
+}
+
+int hasExited(TaskDescriptor* td) {
+	if (td->state == TASKS_STATE_EXITED)
+		return 1;
+	return 0;
+}
+
 TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms) {
 	// Search for available task descriptor
 	int i;

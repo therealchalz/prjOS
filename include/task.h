@@ -59,5 +59,7 @@ void printSystemCall(SystemCall* sc);
 TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms);
 void setupDefaultCreateParameters(TaskCreateParameters *params, int taskId, int parentId, void* taskEntry);
 int isTaskReady(TaskDescriptor* td);
+void threadExit(TaskDescriptor* td);
+int hasExited(TaskDescriptor* td);
 
 #endif /* TASK_H_ */

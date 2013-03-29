@@ -29,7 +29,7 @@
 * Version:		1.0.0.
 * Description:	LM4F120H5QR startup code.
 *
-* Modified by:	Charles Hache <chache@brood.ca>
+* Modified by:	Charles Hache <chache@brood.ca> for prjOS
 */
 
 #include <debug.h>
@@ -89,7 +89,7 @@ void(* myvectors[])(void) = {
     0,						// Reserved							8
     0,						// Reserved							9
     0,						// Reserved							10
-    contextSwitch,			// SV call							11
+    (void*)contextSwitch,			// SV call							11
     empty_def_handler,		// Debug monitor					12
     0,						// Reserved							13
     empty_def_handler,		// PendSV							14

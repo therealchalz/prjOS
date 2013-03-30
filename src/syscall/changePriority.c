@@ -33,6 +33,7 @@ int prjChangePriority(int priority) {
 }
 
 int sys_changePriority(TaskDescriptor* active){
+	setTaskReady(active);
 	if (active->systemCall.param1>=0 && active->systemCall.param1<TASKS_MAX_PRIORITY)
 		active->priority = active->systemCall.param1;
 	return active->priority;

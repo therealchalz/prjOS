@@ -46,6 +46,7 @@ void initializeTds(TaskDescriptor* tds, int count) {
 	for (i=0; i<count; i++) {
 		tds[i].stackPointer = (int*)(STACK_BASE - stackOffset);
 		tds[i].state = TASKS_STATE_INVALID;
+		tds[i].taskId = i;
 		stackOffset += KERNEL_TASK_DEFAULT_STACK_SIZE;
 	}
 }
@@ -93,9 +94,35 @@ void taskExit(TaskDescriptor* td) {
 	td->state = TASKS_STATE_EXITED;
 }
 
+int isTdAvailable(TaskDescriptor* td) {
+	switch (td->state) {
+	case TASKS_STATE_INVALID:
+	case TASKS_STATE_EXITED:
+		return 1;
+		break;
+	}
+	return 0;
+}
+
 int hasExited(TaskDescriptor* td) {
 	if (td->state == TASKS_STATE_EXITED)
 		return 1;
+	return 0;
+}
+
+TaskDescriptor* findTd(int td, TaskDescriptor* tdList, int count) {
+	TaskDescriptor* ret = 0;
+
+	int tdIndex = td & TASKS_ID_INDEX_MASK;
+
+	if (tdIndex >= count)
+		return 0;
+
+	ret = &tdList[tdIndex];
+
+	if (ret->taskId == td)
+		return ret;
+
 	return 0;
 }
 
@@ -104,14 +131,14 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 	int i;
 	TaskDescriptor* ret = 0;
 	for (i=0; i<count; i++) {
-		if (tds[i].taskId == 0) {
+		if (isTdAvailable(&tds[i])) {
 			ret = &tds[i];
 			break;
 		}
 	}
 
 	if (ret != 0) {
-		ret->taskId = parms->taskId;
+		ret->taskId = ret->taskId + TASKS_ID_GENERATION_INCREMENT;
 		ret->parentId = parms->parentId;
 		if (parms->stackPointer != 0)
 			ret->stackPointer = parms->stackPointer;
@@ -121,7 +148,6 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 		ret->state = TASKS_STATE_RUNNING;
 		ret->priority = parms->priority;
 
-		//printTd(ret,17);
 	} else {
 		bwprintf("PANIC: Ran out task descriptor space");
 		while(1) {

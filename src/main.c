@@ -97,19 +97,24 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 		break;
 	case SYSCALL_GET_TID:
 		t->systemCall.returnValue = sys_getTid(t);
-		setTaskReady(t);
 		break;
 	case SYSCALL_GET_PARENT_TID:
 		t->systemCall.returnValue = sys_getParentTid(t);
-		setTaskReady(t);
 		break;
 	case SYSCALL_YIELD:
 		t->systemCall.returnValue = sys_yield(t);
-		setTaskReady(t);
 		break;
 	case SYSCALL_THREADEXIT:
 		t->systemCall.returnValue = sys_exit(t);
-		//Don't set the task as ready - it has quit
+		break;
+	case SYSCALL_SEND:
+		t->systemCall.returnValue = sys_send(t, kernelData);
+		break;
+	case SYSCALL_RECEIVE:
+		t->systemCall.returnValue = sys_receive(t, kernelData);
+		break;
+	case SYSCALL_REPLY:
+		t->systemCall.returnValue = sys_reply(t, kernelData);
 		break;
 	case SYSCALL_CREATE:
 		//This one receives special attention
@@ -125,7 +130,6 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 		break;
 	case SYSCALL_CHANGEPRIORITY:
 		t->systemCall.returnValue = sys_changePriority(t);
-		setTaskReady(t);
 		break;
 	}
 }

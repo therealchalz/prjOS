@@ -26,6 +26,7 @@
 #define SYS_SYSCALL_H_
 
 #include <task.h>
+#include <kernel_data.h>
 
 int sys_getParentTid(TaskDescriptor* active);
 int sys_getTid(TaskDescriptor* active);
@@ -34,6 +35,9 @@ int sys_threadexit(TaskDescriptor* active);
 int sys_create(TaskDescriptor* active, TaskCreateParameters* params);
 int sys_changePriority(TaskDescriptor* active);
 int sys_exit(TaskDescriptor* active);
+int sys_send(TaskDescriptor* active, KernelData* kData);
+int sys_receive(TaskDescriptor* active, KernelData* kData);
+int sys_reply(TaskDescriptor* active, KernelData* kData);
 
 int prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
 

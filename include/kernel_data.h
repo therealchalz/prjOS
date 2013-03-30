@@ -25,6 +25,8 @@
 #ifndef KERNEL_DATA_H_
 #define KERNEL_DATA_H_
 
+#include <scheduler.h>
+
 typedef struct KernelData {
 	TaskDescriptor* taskDescriptorList;	// pointer to the list of all tasks
 	unsigned int tdCount;				// size of task list

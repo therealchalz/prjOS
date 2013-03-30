@@ -41,9 +41,9 @@
 
 #define TASKS_MAX_PRIORITY	    7
 
-#define TASKS_ID_GENERATION_MASK	0xFFFF0000
-#define TASKS_ID_INDEX_MASK			0x0000FFFF
-#define TASKS_ID_INVALID			0x0000FFFF
+#define TASKS_ID_GENERATION_MASK		0xFFFFF000
+#define TASKS_ID_GENERATION_INCREMENT	0x00001000
+#define TASKS_ID_INDEX_MASK				0x00000FFF
 
 typedef struct SystemCall {
 	int syscall;	//0 means hardware interrupted, anything else = syscall

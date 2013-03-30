@@ -33,5 +33,6 @@ int prjGetTid() {
 }
 
 int sys_getTid(TaskDescriptor* active){
+	setTaskReady(active);
 	return active->taskId;
 }

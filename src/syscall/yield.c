@@ -33,5 +33,6 @@ int prjYield() {
 }
 
 int sys_yield(TaskDescriptor* active){
+	setTaskReady(active);
 	return 0;
 }

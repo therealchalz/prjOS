@@ -34,5 +34,6 @@ int prjGetParentTid() {
 }
 
 int sys_getParentTid(TaskDescriptor* active){
+	setTaskReady(active);
 	return active->parentId;
 }

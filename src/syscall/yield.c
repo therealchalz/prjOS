@@ -25,7 +25,7 @@
 #include <syscall.h>
 #include <task.h>
 
-int yield() {
+int prjYield() {
 	int ret;
 	asm (svcArg(SYSCALL_YIELD));
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);

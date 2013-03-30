@@ -25,19 +25,25 @@
 #ifndef SYSCALL_H_
 #define SYSCALL_H_
 
-#define SYSCALL_HARDWARE_CALL		0
+//SVC call parameters (immediate values)
+#define SYSCALL_HARDWARE_CALL		0	//Do not change this one
 #define SYSCALL_GET_TID				1
 #define SYSCALL_GET_PARENT_TID		2
 #define SYSCALL_YIELD				3
 #define SYSCALL_THREADEXIT			4
 #define SYSCALL_CREATE				5
 #define SYSCALL_CHANGEPRIORITY		6
+//TODO:
+#define SYSCALL_TASKSWITCH			7
+#define SYSCALL_SEND				8
+#define SYSCALL_RECEIVE				9
+#define SYSCALL_REPLY				10
 
-int getParentTid(void);
-int getTid(void);
-int yield(void);
-int threadExit(void);
-int create(int priority, void* entryPoint);
-int changePriority(int newPriority);
+int prjGetParentTid(void);
+int prjGetTid(void);
+int prjYield(void);
+int prjExit(void);
+int prjCreate(int priority, void* entryPoint);
+int prjChangePriority(int newPriority);
 
 #endif /* SYSCALL_H_ */

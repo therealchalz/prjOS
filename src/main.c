@@ -42,41 +42,34 @@ void __error__(char *filename, unsigned long line) {
 }
 #endif
 
-int testParameterFunction(int p1, int p2, int p3, int p4, int p5, int p6) {
-	int ret;
-	asm (svcArg(1));
-	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
-	return ret;
-}
-
 void testTask() {
-	int tid = getTid();
-	int pid = getParentTid();
+	int tid = prjGetTid();
+	int pid = prjGetParentTid();
 
 	bwprintf("Task Running.  TaskID: %d.  Parent: %d\n\r", tid, pid);
 
-	yield();
+	prjYield();
 
 	bwprintf("Task Running.  TaskID: %d.  Parent: %d\n\r", tid, pid);
 
-	threadExit();
+	prjExit();
 }
 
 void firstUserTask() {
-	bwprintf("First User Task Created %d\n\r", create(2, &testTask));
-	bwprintf("First User Task Created %d\n\r", create(2, &testTask));
-	bwprintf("First User Task Created %d\n\r", create(0, &testTask));
-	bwprintf("First User Task Created %d\n\r", create(0, &testTask));
+	bwprintf("First User Task Created %d\n\r", prjCreate(2, &testTask));
+	bwprintf("First User Task Created %d\n\r", prjCreate(2, &testTask));
+	bwprintf("First User Task Created %d\n\r", prjCreate(0, &testTask));
+	bwprintf("First User Task Created %d\n\r", prjCreate(0, &testTask));
 	bwprintf("First Exiting\n\r");
-	threadExit();
+	prjExit();
 }
 
 void firstTask() {
 	bwprintf("Init Task Starting...\n\r");
-	bwprintf("Init created %d\n\r", create(1, &firstUserTask));
-	changePriority(TASKS_MAX_PRIORITY-1);
+	bwprintf("Init created %d\n\r", prjCreate(1, &firstUserTask));
+	prjChangePriority(TASKS_MAX_PRIORITY-1);
 	while(1) {
-		yield();
+		prjYield();
 	}
 }
 
@@ -115,7 +108,7 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 		setTaskReady(t);
 		break;
 	case SYSCALL_THREADEXIT:
-		t->systemCall.returnValue = sys_threadexit(t);
+		t->systemCall.returnValue = sys_exit(t);
 		//Don't set the task as ready - it has quit
 		break;
 	case SYSCALL_CREATE:

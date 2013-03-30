@@ -25,7 +25,7 @@
 #include <syscall.h>
 #include <task.h>
 
-int getTid() {
+int prjGetTid() {
 	int ret;
 	asm (svcArg(SYSCALL_GET_TID));
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);

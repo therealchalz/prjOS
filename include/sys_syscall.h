@@ -33,5 +33,6 @@ int sys_yield(TaskDescriptor* active);
 int sys_threadexit(TaskDescriptor* active);
 int sys_create(TaskDescriptor* active, TaskCreateParameters* params);
 int sys_changePriority(TaskDescriptor* active);
+int sys_exit(TaskDescriptor* active);
 
 #endif /* SYS_SYSCALL_H_ */

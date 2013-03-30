@@ -25,7 +25,7 @@
 #include <syscall.h>
 #include <task.h>
 
-int changePriority(int priority) {
+int prjChangePriority(int priority) {
 	int ret;
 	asm (svcArg(SYSCALL_CHANGEPRIORITY));
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);

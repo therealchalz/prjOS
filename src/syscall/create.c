@@ -25,7 +25,7 @@
 #include <syscall.h>
 #include <task.h>
 
-int create(int priority, void* entryPoint) {
+int prjCreate(int priority, void* entryPoint) {
 	int ret;
 	asm (svcArg(SYSCALL_CREATE));
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);

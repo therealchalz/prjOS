@@ -26,14 +26,14 @@
 #include <syscall.h>
 #include <task.h>
 
-int threadExit() {
+int prjExit() {
 	int ret;
 	asm (svcArg(SYSCALL_THREADEXIT));
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_threadexit(TaskDescriptor* active){
+int sys_exit(TaskDescriptor* active) {
 	taskExit(active);
 	return 0;
 }

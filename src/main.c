@@ -177,7 +177,7 @@ int main(void) {
 
 		if (currentTask != 0) {
 			//bwprintf("Kernel switching to task...\r\n");
-			TaskSwitch(currentTask);
+			prjTaskSwitch(currentTask);
 			//bwprintf("Kernel running...\r\n");
 			handleSyscall(currentTask, &kernelData);
 			if (!hasExited(currentTask)) {

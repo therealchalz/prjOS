@@ -35,4 +35,6 @@ int sys_create(TaskDescriptor* active, TaskCreateParameters* params);
 int sys_changePriority(TaskDescriptor* active);
 int sys_exit(TaskDescriptor* active);
 
+int prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
+
 #endif /* SYS_SYSCALL_H_ */

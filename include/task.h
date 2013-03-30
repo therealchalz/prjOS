@@ -27,6 +27,9 @@
 
 #include <hardware_dependent/cpu_defs.h>
 
+//These may be hardcoded in some hardware dependent
+//places so they shouldn't be changed.  Adding shouldn't
+//be a problem though
 #define TASKS_STATE_INVALID		0
 #define TASKS_STATE_RUNNING		1
 #define TASKS_STATE_EXITED		2
@@ -34,6 +37,7 @@
 #define TASKS_STATE_SEND_BLK	4
 #define TASKS_STATE_RPLY_BLK	5
 #define TASKS_STATE_EVT_BLK		6
+#define TASKS_STATE_SYSCALL_BLK	7
 
 #define TASKS_MAX_PRIORITY	    7
 
@@ -44,7 +48,6 @@
 typedef struct SystemCall {
 	int syscall;	//0 means hardware interrupted, anything else = syscall
 	int returnValue;
-	int handled;	//has this syscall been handled yet?
 	int param1;
 	int param2;
 	int param3;
@@ -78,6 +81,7 @@ void printSystemCall(SystemCall* sc);
 TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms);
 void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry);
 int isTaskReady(TaskDescriptor* td);
+void setTaskReady(TaskDescriptor* td);
 void taskExit(TaskDescriptor* td);
 int hasExited(TaskDescriptor* td);
 

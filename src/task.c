@@ -85,6 +85,10 @@ int isTaskReady(TaskDescriptor* td) {
 	return ret;
 }
 
+void setTaskReady(TaskDescriptor* td) {
+	td->state = TASKS_STATE_RUNNING;
+}
+
 void taskExit(TaskDescriptor* td) {
 	td->state = TASKS_STATE_EXITED;
 }

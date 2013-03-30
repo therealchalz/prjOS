@@ -103,11 +103,14 @@ taskToKernel:
 		LDR			R2, [R2, #-2]
 		AND			R2, R2, #255
 
-		# Save the syscall arg, clear the ret value and handled flag
+		# Save the syscall arg, clear the ret value
 		STR			R2,	[R0, #12]
 		MOV			R3, #0
 		STR			R3, [R0, #16]
-		STR			R3, [R0, #20]
+
+		# Set the task state to be blocking on syscall
+		MOV			R3, 7
+		STR			R3, [R0, #44]
 
 		# If the SVC call arg is 0 it means hardware interrupt,
 		# otherwise it's a syscall and we should save the arguments.
@@ -120,23 +123,23 @@ syscall:
 		# registers by the compiler/gcc)
 		# R0
 		LDR			R2, [R1, #36]
-		STR			R2, [R0, #24]
+		STR			R2, [R0, #20]
 		# R1, R2, R3
 		LDR			R2, [R1, #40]
-		STR			R2, [R0, #28]
+		STR			R2, [R0, #24]
 		LDR			R2, [R1, #44]
 		STR			R2, [R0, #32]
 		LDR			R2, [R1, #48]
-		STR			R2, [R0, #36]
+		STR			R2, [R0, #32]
 		# Parameters 5 and 6, from the stack before the exception
 		# main task SP = [R0, #68]
 		# then compiler puts a 6 word frame on top,
 		# and compilers pushes 2 words to save,
 		# so p5 = [R0, #(68+8*4)]...
 		LDR			R2, [R1, #100]
-		STR			R2, [R0, #40]
+		STR			R2, [R0, #36]
 		LDR			R2, [R1, #104]
-		STR			R2, [R0, #44]
+		STR			R2, [R0, #40]
 
 		# The TaskSwitch syscall always returns 0
 		MOV			R0, #0

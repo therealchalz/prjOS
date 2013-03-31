@@ -38,6 +38,16 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 	cpuSetupTaskDefaultParameters(&(params->cpuSpecific), taskEntry);
 }
 
+void reinitializeTd(TaskDescriptor* td) {
+	int oldId = td->taskId;
+	int idx = oldId & TASKS_ID_INDEX_MASK;
+	int stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
+	int* stackPointer = (int*)(STACK_BASE - stackOffset);
+	memset(td, 0, sizeof(td));
+	td->taskId = oldId;
+	td->stackPointer = stackPointer;
+}
+
 void initializeTds(TaskDescriptor* tds, int count) {
 	memset(tds, 0, count*sizeof(TaskDescriptor));
 
@@ -138,7 +148,8 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 	}
 
 	if (ret != 0) {
-		ret->taskId = ret->taskId + TASKS_ID_GENERATION_INCREMENT;
+		reinitializeTd(ret);
+		ret->taskId += TASKS_ID_GENERATION_INCREMENT;
 		ret->parentId = parms->parentId;
 		if (parms->stackPointer != 0)
 			ret->stackPointer = parms->stackPointer;
@@ -150,8 +161,6 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 
 	} else {
 		bwprintf("PANIC: Ran out task descriptor space");
-		while(1) {
-		}
 	}
 
 	return ret;

@@ -109,7 +109,7 @@ taskToKernel:
 		STR			R3, [R0, #16]
 
 		# Set the task state to be blocking on syscall
-		MOV			R3, 7
+		MOV			R3, #7
 		STR			R3, [R0, #44]
 
 		# If the SVC call arg is 0 it means hardware interrupt,
@@ -128,7 +128,7 @@ syscall:
 		LDR			R2, [R1, #40]
 		STR			R2, [R0, #24]
 		LDR			R2, [R1, #44]
-		STR			R2, [R0, #32]
+		STR			R2, [R0, #28]
 		LDR			R2, [R1, #48]
 		STR			R2, [R0, #32]
 		# Parameters 5 and 6, from the stack before the exception

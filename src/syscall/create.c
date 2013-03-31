@@ -36,12 +36,15 @@ int sys_create(TaskDescriptor* active, TaskCreateParameters* params) {
 	setupDefaultCreateParameters(params, (void*)active->systemCall.param2);
 	params->parentId = active->taskId;
 	//lets not let someone create a task with a higher priority then they are
-	int pri = active->systemCall.param1;
+	int priority = active->systemCall.param1;
+	if (priority < 0 && priority >= TASKS_MAX_PRIORITY) {
+		return ERR_CREATE_INVAL_PRIORITY;
+	}
 	/* Temporarily removed
-	if (pri > active->priority)
-		pri = active->priority;
+	if (priority > active->priority)
+		priority = active->priority;
 	*/
-	params->priority = pri;
+	params->priority = priority;
 	return 0;
 }
 

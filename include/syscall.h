@@ -38,11 +38,38 @@
 #define SYSCALL_RECEIVE				9
 #define SYSCALL_REPLY				10
 
+/* CREATE error codes */
+#define ERR_CREATE_INVAL_PRIORITY	(-1)	/* Priority was invalid */
+#define ERR_CREATE_NO_SPACE			(-2)	/* No empty task descriptors */
+#define ERR_CREATE_INVAL_NAME		(-3)	/* Invalid task entrypoint */
+
+/* SEND error codes */
+#define ERR_SEND_TASKID_DNE			(-1)	/* The task ID doesn't represent a possible task */
+#define ERR_SEND_TASKID_NOTFOUND	(-2)	/* The task could not be found */
+#define ERR_SEND_INCOMPLETE			(-3)	/* The transaction couldn't be completed */
+#define ERR_SEND_BAD_BUFFER			(-4)	/* Either the send or the reply buffer is invalid (or the reply buffer has 0 size) */
+#define ERR_SEND_EXITED				(-5)	/* The other task has exited before this request could be completed */
+
+/* RECEIVE error codes */
+#define ERR_RECEIVE_BUFFER_TOO_SMALL	(-1)	/* The message buffer wasn't large enough to hold the whole message */
+#define ERR_RECEIVE_BAD_BUFFER		(-2)	/* The message buffer is invalid */
+#define ERR_RECEIVE_NOSEND			(-3)	/* There was no sender on a non-blocking receive call */
+
+/* REPLY error codes */
+#define ERR_REPLY_TASKID_DNE		(-1)	/* The task ID doesn't represent a possible task */
+#define ERR_REPLY_TASKID_NOTFOUND	(-2)	/* The task could not be found */
+#define ERR_REPLY_NOT_REPLY_BLOCKED	(-3)	/* The task is not reply-blocked */
+#define ERR_REPLY_BUFFER_TOO_SMALL	(-4)	/* The reply buffer wasn't large enough to hold the whole reply */
+#define ERR_REPLY_ERROR				(-5)	/* There was another error */
+
 int prjGetParentTid(void);
 int prjGetTid(void);
 int prjYield(void);
 int prjExit(void);
 int prjCreate(int priority, void* entryPoint);
 int prjChangePriority(int newPriority);
+int prjSend(int tid, char *msg, int msgLen, char *reply, int replyLen);
+int prjReceive(int *tid, char *msg, int msgLen);
+int prjReply(int tid, char *msg, int msgLen);
 
 #endif /* SYSCALL_H_ */

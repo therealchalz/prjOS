@@ -31,6 +31,7 @@
 #include <sys_syscall.h>
 #include <kernel_data.h>
 #include <string.h>
+#include <base_tasks/nameserver.h>
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -66,18 +67,29 @@ void firstUserTask() {
 
 void firstTask() {
 	bwprintf("Init Task Starting...\n\r");
+	int nameserver = prjCreate(3, &nameserverEntry);
+	bwprintf("Init created nameserver: %d\n\r", nameserver);
 	bwprintf("Init created %d\n\r", prjCreate(1, &firstUserTask));
 	prjChangePriority(TASKS_MAX_PRIORITY-1);
-	while(1) {
+	int x = 5;
+	while(x > 0) {
 		prjYield();
+		x--;
 	}
+	NameserverQuery send;
+	NameserverQuery receive;
+	strcpy(send.buffer, "TESTING! 420?");
+	send.bufferLen = strlen("TESTING! 420?");
+	send.operation = NAMESERVER_OPERATION_EXIT;
+	bwprintf("Quit command to nameserver returned: %d\n\r", prjSend(nameserver, (char*)&send, sizeof(NameserverQuery), (char*)&receive, sizeof(NameserverQuery)));
+	bwprintf("Idle Task quitting\r\n");
+	prjExit();
 }
 
 TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count) {
 	TaskCreateParameters params;
 	setupDefaultCreateParameters(&params, &firstTask);
 	params.parentId = 0;
-	params.taskId = 1;
 	params.priority = 0;
 	return createTask(tds, count, &params);
 }
@@ -89,7 +101,7 @@ void TaskSwitch(TaskDescriptor* t) {
 
 void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	//TODO: if this TD has nothing to to, look for one that has waiting work
-	if (isTaskReady(t)) {
+	if (t->state != TASKS_STATE_SYSCALL_BLK) {
 		return;
 	}
 	switch (t->systemCall.syscall) {
@@ -120,9 +132,16 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 		//This one receives special attention
 		{
 			TaskCreateParameters params;
-			sys_create(t, &params);
-			params.taskId = kernelData->nextTaskId++;
+			int r = sys_create(t, &params);
+			if (r) { //error
+				t->systemCall.returnValue = r;
+				break;
+			}
 			TaskDescriptor* theNewTask = createTask(kernelData->taskDescriptorList, kernelData->tdCount, &params);
+			if (theNewTask == 0) {
+				t->systemCall.returnValue = ERR_CREATE_NO_SPACE;
+				break;
+			}
 			schedulerAdd(kernelData->schedulerStructure, theNewTask);
 			t->systemCall.returnValue = theNewTask->taskId;
 		}
@@ -159,7 +178,6 @@ int main(void) {
 	memset(&kernelData, 0, sizeof(KernelData));
 	kernelData.taskDescriptorList = taskDescriptors;
 	kernelData.tdCount = KERNEL_MAX_NUMBER_OF_TASKS;
-	kernelData.nextTaskId = 2;
 	kernelData.schedulerStructure = &schedStruct;
 
 	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));

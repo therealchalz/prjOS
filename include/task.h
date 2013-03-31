@@ -43,6 +43,7 @@
 
 #define TASKS_ID_GENERATION_MASK		0xFFFFF000
 #define TASKS_ID_GENERATION_INCREMENT	0x00001000
+#define TASKS_ID_GENERATION_SHIFTBITS	12
 #define TASKS_ID_INDEX_MASK				0x00000FFF
 
 typedef struct SystemCall {
@@ -64,11 +65,13 @@ typedef struct TaskDescriptor {
 	SystemCall systemCall;
 	unsigned int state;
 	unsigned int priority;
+	struct TaskDescriptor* sendQueueNext;
+	struct TaskDescriptor* sendQueueHead;
+	struct TaskDescriptor* sendQueueTail;
 } TaskDescriptor;
 
 typedef struct TaskCreateParameters {
-	unsigned int taskId;		//OS-assigned task id
-	unsigned int parentId;		//OS-assigned task parent
+	unsigned int parentId;		//OS-assigned task parent task Id
 	int* stackPointer;
 	int priority;
 	//Hardware-dependent parameters
@@ -84,5 +87,6 @@ int isTaskReady(TaskDescriptor* td);
 void setTaskReady(TaskDescriptor* td);
 void taskExit(TaskDescriptor* td);
 int hasExited(TaskDescriptor* td);
+TaskDescriptor* findTd(int td, TaskDescriptor* tdList, int count);
 
 #endif /* TASK_H_ */

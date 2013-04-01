@@ -18,37 +18,28 @@
  * Contributors:
  *     Charles Hache <chache@brood.ca> - initial API and implementation
 ***************************************/
+
 /*
- * nameserver.h
+ * registerNameserver.c
  */
 
-#ifndef NAMESERVER_H_
-#define NAMESERVER_H_
+#include <syscall.h>
+#include <task.h>
+#include <kernel_data.h>
+#include <string.h>
+#include <bwio.h>
+#include <base_tasks/nameserver.h>
 
-#define NAMESERVER_NAMESTR			"NameServer"
-#define NAMESERVER_MAX_NAMES		16
-#define NAMESERVER_MAX_NAME_LENGTH	32
+int prjRegisterNameserver(int tid) {
+	int ret;
+	asm (svcArg(SYSCALL_REGISTERNS));
+	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
+	return ret;
+}
 
-#define NAMESERVER_OPERATION_INVALID	0
-#define NAMESERVER_OPERATION_REGISTER	1
-#define NAMESERVER_OPERATION_WHOIS		2
-#define NAMESERVER_OPERATION_EXIT		3
-#define NAMESERVER_OPERATION_NO_SPACE	4
-#define NAMESERVER_OPERATION_TOO_LONG	5
-#define NAMESERVER_OPERATION_ERROR		6
+int sys_registerNs(TaskDescriptor* active, KernelData* kData){
+	setTaskReady(active);
+	kData->nameserverTid = active->systemCall.param1;
+	return 0;
+}
 
-typedef struct NameserverEntry {
-	unsigned int tid;
-	char name[NAMESERVER_MAX_NAME_LENGTH];
-} NameserverEntry;
-
-typedef struct NameserverQuery {
-	unsigned int senderTid;
-	char buffer[NAMESERVER_MAX_NAME_LENGTH];
-	unsigned int bufferLen;
-	unsigned int operation; //Possible values defined above
-} NameserverQuery;
-
-void nameserverEntry();
-
-#endif /* NAMESERVER_H_ */

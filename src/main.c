@@ -69,6 +69,7 @@ void firstTask() {
 	bwprintf("Init Task Starting...\n\r");
 	int nameserver = prjCreate(3, &nameserverEntry);
 	bwprintf("Init created nameserver: %d\n\r", nameserver);
+	prjRegisterNameserver(nameserver);
 	bwprintf("Init created %d\n\r", prjCreate(1, &firstUserTask));
 	prjChangePriority(TASKS_MAX_PRIORITY-1);
 	int x = 5;
@@ -76,6 +77,9 @@ void firstTask() {
 		prjYield();
 		x--;
 	}
+
+	bwprintf("Nameserver TID should be: %d\n\r", prjWhoIs(NAMESERVER_NAMESTR));
+
 	NameserverQuery send;
 	NameserverQuery receive;
 	strcpy(send.buffer, "TESTING! 420?");
@@ -149,6 +153,12 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 		break;
 	case SYSCALL_CHANGEPRIORITY:
 		t->systemCall.returnValue = sys_changePriority(t);
+		break;
+	case SYSCALL_WHOISNS:
+		t->systemCall.returnValue = sys_whoIsNs(t, kernelData);
+		break;
+	case SYSCALL_REGISTERNS:
+		t->systemCall.returnValue = sys_registerNs(t, kernelData);
 		break;
 	}
 }

@@ -1,3 +1,24 @@
+/***************************************
+ * Copyright (c) 2013 Charles Hache <chache@brood.ca>. All rights reserved. 
+ * 
+ * This file is part of the prjOS project.
+ * prjOS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * prjOS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with prjOS.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Contributors:
+ *     Charles Hache <chache@brood.ca> - initial API and implementation
+***************************************/
+
 /*
  * nameserver.c
  */
@@ -20,16 +41,12 @@ void nameserverEntry() {
 	//Read in query
 	int sender;
 	NameserverQuery query;
-	NameserverQuery reply;
-	int receiveRet;	//return value for receive;
-	int replyRet;	//return value for reply;
-	int replyOperation;
-	int returnValue;
+
 	while(run) {
 
 		bwprintf("NAMESERVER: DEBUG: Waiting for message.\n\r");
 
-		receiveRet = prjReceive(&sender, (char*)&query, sizeof(query));
+		int receiveRet = prjReceive(&sender, (char*)&query, sizeof(query));
 		if (receiveRet < 0) {
 			bwprintf("NAMESERVER: ERR: Receive returned %d.\n\r", receiveRet);
 		}
@@ -41,8 +58,13 @@ void nameserverEntry() {
 		bwprintf("NAMESERVER: DEBUG: Received request from: %d.  Opcode: %d.\n\r", sender, query.operation);
 		bwprintf("NAMESERVER: DEBUG: Got string: %s\n\r", query.buffer);
 		int i;
+
+		int replyOperation;
+		int returnValue;
+
 		switch (query.operation) {
 		case NAMESERVER_OPERATION_REGISTER:
+
 			//Find entry to save at
 			for (i=0; i<NAMESERVER_MAX_NAMES; i++) {
 
@@ -97,24 +119,21 @@ void nameserverEntry() {
 			run = 0;
 			break;
 		default:
-
 			bwprintf("NAMESERVER: WARN: Invalid operation query sent to nameserver: %d.\n\r", query.operation);
 			replyOperation = NAMESERVER_OPERATION_INVALID;
 			break;
 		}
 
 		//Build reply
+		NameserverQuery reply;
+		reply.senderTid = nameserverTid;
 		*((int*)reply.buffer) = returnValue;
 		reply.bufferLen = sizeof(returnValue);
 		reply.operation = replyOperation;
 		bwprintf("NAMESERVER: DEBUG: Replying to sender: %d.\n\r", sender);
-		replyRet = prjReply(sender, (char*)&reply, sizeof(reply));
-		switch (replyRet) {
-		default:
-			if (replyRet != 0) {
-				bwprintf("NAMESERVER: ERR: Reply returned %d.\n\r", replyRet);
-			}
-			break;
+		int replyRet = prjReply(sender, (char*)&reply, sizeof(reply));
+		if (replyRet != 0) {
+			bwprintf("NAMESERVER: ERR: Reply returned %d.\n\r", replyRet);
 		}
 	}
 	prjExit();

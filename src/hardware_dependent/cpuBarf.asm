@@ -1,4 +1,3 @@
-
 #-------------------------------------------------------------------------------
 # Copyright (c) 2013 Charles Hache <chache@brood.ca>. All rights reserved. 
 # 

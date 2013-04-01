@@ -38,6 +38,8 @@ int sys_exit(TaskDescriptor* active);
 int sys_send(TaskDescriptor* active, KernelData* kData);
 int sys_receive(TaskDescriptor* active, KernelData* kData);
 int sys_reply(TaskDescriptor* active, KernelData* kData);
+int sys_whoIsNs(TaskDescriptor* active, KernelData* kData);
+int sys_registerNs(TaskDescriptor* active, KernelData* kData);
 
 int prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
 

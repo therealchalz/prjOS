@@ -90,5 +90,6 @@ int prjReceive(int *tid, char *msg, int msgLen);
 int prjReply(int tid, char *msg, int msgLen);
 int prjWhoIs(char *name);
 int prjRegisterNameserver(int tid);
+int prjRegisterAs(char* name);
 
 #endif /* SYSCALL_H_ */

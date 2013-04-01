@@ -74,10 +74,8 @@ int sys_reply(TaskDescriptor* active, KernelData *kData){
 		// Update the sender's state
 		sendingTask->state = TASKS_STATE_RUNNING;
 		// Copy message to sender's buffer
-		int* loc = (int *)sendingTask->stackPointer;
-		int destSize = *(loc);
-		char* destination = (char*)*(++loc);
-		sendingTask->stackPointer = ++loc;
+		int destSize = sendingTask->systemCall.param5;
+		char* destination = (char*)sendingTask->systemCall.param4;
 
 		int size = replyLen;
 		if (size > destSize) {
@@ -99,14 +97,13 @@ int sys_reply(TaskDescriptor* active, KernelData *kData){
 				ret = ERR_REPLY_ERROR;
 			}
 		}
-	}
-	else{
+	} else {
 	  bwprintf("REPLY: WARN: Called reply, but no one is listening.\n\r");
 	  ret = ERR_REPLY_NOT_REPLY_BLOCKED;
 	}
 
 	bwprintf("REPLY: DEBUG: Done Replying...\n\r");
-
+	active->state = TASKS_STATE_RUNNING;
 	return ret;
 }
 

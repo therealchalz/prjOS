@@ -70,10 +70,8 @@ int sys_receive(TaskDescriptor* active, KernelData * kData){
 		senderTask->state = TASKS_STATE_RPLY_BLK;
 
 		//Copy message to receiver's buffer
-		int* loc = senderTask->stackPointer;
-		int sourceSize = *(loc);
-		char* source = (char*)*(++loc);
-		senderTask->stackPointer = (++loc);
+		int sourceSize = senderTask->systemCall.param3;
+		char* source = (char*)senderTask->systemCall.param2;
 
 		int size = sourceSize;
 		if (size > destLen) {
@@ -108,13 +106,6 @@ int sys_receive(TaskDescriptor* active, KernelData * kData){
 	} else {
 
 		bwprintf("RECEIVE: DEBUG: Sender is not ready, blocking.\n\r");
-
-		// Push buffer location and size on to the active task's stack
-		int* loc = (int *)active->stackPointer;
-		*(--loc) = (int)tid; // Put TID location onto the stack
-		*(--loc) = (int)dest;
-		*(--loc) = destLen;
-		active->stackPointer = loc;
 
 		// Set state to send blocked
 		active->state = TASKS_STATE_SEND_BLK;

@@ -86,12 +86,6 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 		return ERR_SEND_BAD_BUFFER;
 	}
 
-	// push active task reply buffer on stack
-	int* loc = active->stackPointer;
-	*(--loc) = (int)reply;
-	*(--loc) = replyLen;
-	active->stackPointer = loc;
-
 	// Is the receiver ready?
 	bwprintf("SEND: DEBUG: Checking Receiver\n\r");
 	if (receiveTask->state == TASKS_STATE_SEND_BLK) {
@@ -103,18 +97,14 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 		// Update the sender's state
 		active->state = TASKS_STATE_RPLY_BLK;
 
-
 		receiveTask->sendQueueHead = 0; //reset pointer
 		//Copy message to receiver's buffer
-		loc = receiveTask->stackPointer;
-		int destSize = *(loc++);
-		char* destination = (char*)*(loc++);
-		int* receiverTidParam = (int*)*(loc++);
+		int destSize = receiveTask->systemCall.param3;
+		char* destination = (char*)receiveTask->systemCall.param2;
+		int* receiverTidParam = (int*)receiveTask->systemCall.param1;
 
 		// Set the tid of the receive
 		*(receiverTidParam) = active->taskId;
-
-		receiveTask->stackPointer = (loc);
 
 		int size = messageLen;
 		if (size > destSize) {

@@ -294,7 +294,9 @@ void nmi_handler(void){
 }
 
 // Hard fault handler code NVIC 3
+__attribute__((naked))
 void hardfault_handler(void){
+	//pre exception LR and PC should be at SP-20 and -24.
 	cpuBarf();
 	printCurrentStackTop(12);
 	bwprintf("Hardfault Handler\n\r");

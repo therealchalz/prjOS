@@ -38,8 +38,8 @@ int prjWhoIs (char *name) {
 		asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	} else {
 		//Construct query
-		struct NameserverQuery query;
-		struct NameserverQuery reply;
+		NameserverQuery query;
+		NameserverQuery reply;
 
 		query.senderTid = prjGetTid();
 		query.operation = NAMESERVER_OPERATION_WHOIS;

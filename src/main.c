@@ -70,6 +70,7 @@ void firstTask() {
 	int nameserver = prjCreate(3, &nameserverEntry);
 	bwprintf("Init created nameserver: %d\n\r", nameserver);
 	prjRegisterNameserver(nameserver);
+	prjRegisterAs("firstTask");
 	bwprintf("Init created %d\n\r", prjCreate(1, &firstUserTask));
 	prjChangePriority(TASKS_MAX_PRIORITY-1);
 	int x = 5;
@@ -79,7 +80,7 @@ void firstTask() {
 	}
 
 	bwprintf("Nameserver TID should be: %d\n\r", prjWhoIs(NAMESERVER_NAMESTR));
-
+	bwprintf("First Task TID should be: %d\n\r", prjWhoIs("firstTask"));
 	NameserverQuery send;
 	NameserverQuery receive;
 	strcpy(send.buffer, "TESTING! 420?");

@@ -23,9 +23,9 @@
  * debug.c
  */
 
-#include <debug.h>
-#include <bwio.h>
-#include <task.h>
+#include "prjOS/include/debug.h"
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/task.h"
 
 // byteGroupSize={1,2,4}
 // showAsLittleEndian={0,!0}

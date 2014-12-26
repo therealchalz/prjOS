@@ -25,7 +25,9 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <hardware_dependent/cpu_defs.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
 
 //These may be hardcoded in some hardware dependent
 //places so they shouldn't be changed.  Adding shouldn't
@@ -78,7 +80,7 @@ typedef struct TaskCreateParameters {
 	TaskCpuCreateParameters cpuSpecific;
 } TaskCreateParameters;
 
-void initializeTds(TaskDescriptor* tds, int count);
+void initializeTds(TaskDescriptor* tds, int count, int* stackBase);
 void printTd(TaskDescriptor* td, int stackAmount);
 void printSystemCall(SystemCall* sc);
 TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms);

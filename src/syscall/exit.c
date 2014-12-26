@@ -23,8 +23,8 @@
  */
 
 
-#include <syscall.h>
-#include <task.h>
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/task.h"
 
 int prjExit() {
 	int ret;

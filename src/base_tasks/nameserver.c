@@ -23,10 +23,10 @@
  * nameserver.c
  */
 
-#include <base_tasks/nameserver.h>
-#include <syscall.h>
-#include <string.h>
-#include <bwio.h>
+#include "prjOS/include/base_tasks/nameserver.h"
+#include "prjOS/include/syscall.h"
+#include "string.h"
+#include "prjOS/include/bwio.h"
 
 void nameserverEntry() {
 	int nameserverTid = prjGetTid();

@@ -22,13 +22,13 @@
  * task.c
  */
 
-#include <task.h>
-#include <hardware_dependent/cpu_defs.h>
-#include <debug.h>
-#include <bwio.h>
-#include <hardware_dependent/cpu.h>
-#include <string.h>
-#include <syscall.h>
+#include "prjOS/include/task.h"
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
+#include "prjOS/include/debug.h"
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/hardware_dependent/cpu.h"
+#include "string.h"
+#include "prjOS/include/syscall.h"
 
 void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry) {
 	memset(params, 0, sizeof(TaskCreateParameters));
@@ -38,23 +38,23 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 	cpuSetupTaskDefaultParameters(&(params->cpuSpecific), taskEntry);
 }
 
-void reinitializeTd(TaskDescriptor* td) {
+void reinitializeTd(TaskDescriptor* td, int* stackBase) {
 	int oldId = td->taskId;
 	int idx = oldId & TASKS_ID_INDEX_MASK;
 	int stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
-	int* stackPointer = (int*)(STACK_BASE - stackOffset);
-	memset(td, 0, sizeof(td));
+	int* stackPointer = (int*)(stackBase - stackOffset);
+	memset(td, 0, sizeof(TaskDescriptor));
 	td->taskId = oldId;
 	td->stackPointer = stackPointer;
 }
 
-void initializeTds(TaskDescriptor* tds, int count) {
+void initializeTds(TaskDescriptor* tds, int count, int* stackBase) {
 	memset(tds, 0, count*sizeof(TaskDescriptor));
 
 	int stackOffset = KERNEL_STACK_SIZE;
 	int i;
 	for (i=0; i<count; i++) {
-		tds[i].stackPointer = (int*)(STACK_BASE - stackOffset);
+		tds[i].stackPointer = (int*)(stackBase - stackOffset);
 		tds[i].state = TASKS_STATE_INVALID;
 		tds[i].taskId = i;
 		stackOffset += KERNEL_TASK_DEFAULT_STACK_SIZE;
@@ -148,7 +148,9 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 	}
 
 	if (ret != 0) {
-		reinitializeTd(ret);
+		//TODO:
+		//reinitializeTd(ret);
+
 		ret->taskId += TASKS_ID_GENERATION_INCREMENT;
 		ret->parentId = parms->parentId;
 		if (parms->stackPointer != 0)

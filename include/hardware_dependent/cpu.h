@@ -25,8 +25,8 @@
 #ifndef CPU_H_
 #define CPU_H_
 
-#include <task.h>
-#include <hardware_dependent/cpu_defs.h>
+#include "prjOS/include/task.h"
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
 
 void cpuInit();
 void cpuPrintInfo();

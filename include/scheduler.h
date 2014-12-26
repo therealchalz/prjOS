@@ -25,8 +25,8 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
-#include <task.h>
-#include <hardware_dependent/cpu_defs.h>
+#include "prjOS/include/task.h"
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
 
 typedef struct SchedulerTask {
 	TaskDescriptor* td;

@@ -22,8 +22,8 @@
  * create.c
  */
 
-#include <syscall.h>
-#include <task.h>
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/task.h"
 
 int prjCreate(int priority, void* entryPoint) {
 	int ret;

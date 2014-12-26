@@ -24,23 +24,18 @@
  * For Stellaris Launchpad
  */
 
-#include <hardware_dependent/cpu.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_types.h>
-#include <driverlib/sysctl.h>
-#include <driverlib/fpu.h>
-#include <bwio.h>
-#include <hardware_dependent/cpu_defs.h>
-#include <task.h>
-
-void cpuInit() {
-	FPULazyStackingEnable();
-	SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
-}
+#include "prjOS/include/hardware_dependent/cpu.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/fpu.h"
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
+#include "prjOS/include/task.h"
 
 void cpuPrintInfo() {
-	bwprintf("Processor: LM4F120\r\n");
-	bwprintf("Board: Stellaris Launchpad\r\n");
+	bwprintf("Processor: TM4C123\r\n");
+	bwprintf("Board: prjStepperDriver 1.0\r\n");
 	bwprintf("Clock: %u\r\n", SysCtlClockGet());
 }
 

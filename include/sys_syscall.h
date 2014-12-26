@@ -25,8 +25,8 @@
 #ifndef SYS_SYSCALL_H_
 #define SYS_SYSCALL_H_
 
-#include <task.h>
-#include <kernel_data.h>
+#include "prjOS/include/task.h"
+#include "prjOS/include/kernel_data.h"
 
 int sys_getParentTid(TaskDescriptor* active);
 int sys_getTid(TaskDescriptor* active);

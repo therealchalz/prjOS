@@ -25,7 +25,7 @@
 #ifndef KERNEL_DATA_H_
 #define KERNEL_DATA_H_
 
-#include <scheduler.h>
+#include "prjOS/include/scheduler.h"
 
 typedef struct KernelData {
 	TaskDescriptor* taskDescriptorList;	// pointer to the list of all tasks

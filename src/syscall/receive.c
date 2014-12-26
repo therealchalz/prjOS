@@ -23,11 +23,11 @@
  * receive.c
  */
 
-#include <syscall.h>
-#include <task.h>
-#include <kernel_data.h>
-#include <string.h>
-#include <bwio.h>
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/task.h"
+#include "prjOS/include/kernel_data.h"
+#include "string.h"
+#include "prjOS/include/bwio.h"
 
 int prjReceive(int *tid, char *msg, int msgLen) {
 	int ret;

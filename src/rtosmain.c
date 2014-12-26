@@ -20,18 +20,17 @@
 ***************************************/
 
 
-#include <hardware_dependent/uart.h>
-#include <bwio.h>
-#include <hardware_dependent/cpu.h>
-#include <hardware_dependent/cpu_defs.h>
-#include <hardware_dependent/board.h>
-#include <debug.h>
-#include <scheduler.h>
-#include <syscall.h>
-#include <sys_syscall.h>
-#include <kernel_data.h>
-#include <string.h>
-#include <base_tasks/nameserver.h>
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/hardware_dependent/cpu.h"
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
+#include "prjOS/include/hardware_dependent/board.h"
+#include "prjOS/include/debug.h"
+#include "prjOS/include/scheduler.h"
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/sys_syscall.h"
+#include "prjOS/include/kernel_data.h"
+#include "string.h"
+#include "prjOS/include/base_tasks/nameserver.h"
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -91,9 +90,9 @@ void firstTask() {
 	prjExit();
 }
 
-TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count) {
+TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count, void* firstTaskFn) {
 	TaskCreateParameters params;
-	setupDefaultCreateParameters(&params, &firstTask);
+	setupDefaultCreateParameters(&params, firstTaskFn);
 	params.parentId = 0;
 	params.priority = 0;
 	return createTask(tds, count, &params);
@@ -164,21 +163,24 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	}
 }
 
-int main(void) {
+int rtos_main(void* firstTaskFn) {
 
-	cpuInit();
+	//cpuInit();
 
-	boardInit();
+	//boardInit();
 
-	UARTInit(115200);
+	//UARTInit(115200);
+	int stackBase = 0;
+	int *stackBasePtr = &stackBase;
 
-	bwprintf("\n\n\n********Kernel Starting********\n\r\n");
+	bwprintf("\n********Kernel Starting********\n\r\n");
+	bwprintf("Stack Base: %x",(stackBasePtr));
 	cpuPrintInfo();
 	printCEnvironmentSettings();
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_MAX_NUMBER_OF_TASKS];
-	initializeTds(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS);
+	initializeTds(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS, stackBasePtr);
 
 	bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor));
 	//Scheduler stuff
@@ -194,29 +196,35 @@ int main(void) {
 	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
 
 	//Create first task
-	TaskDescriptor* currentTask = createFirstTask(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS);
+	TaskDescriptor* currentTask = createFirstTask(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS, firstTaskFn);
+
+	bwprintf("First Task:\n\r");
+	printTd(currentTask, 0);
 
 	schedulerAdd(&schedStruct, currentTask);
 
 	int testLoop = 100;
 
+	//TODO:
+	//return 0;
+
 	while(testLoop >= 0)
 	{
 		testLoop--;
-		//bwprintf("Getting task to schedule...\n\r");
-		//schedulerPrintTasks(&schedStruct);
+		bwprintf("Getting task to schedule...\n\r");
+		schedulerPrintTasks(&schedStruct);
 		currentTask = schedule(&schedStruct);
-		//bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
+		bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
 
 		if (currentTask != 0) {
-			//bwprintf("Kernel switching to task...\r\n");
+			bwprintf("Kernel switching to task...\r\n");
 			prjTaskSwitch(currentTask);
-			//bwprintf("Kernel running...\r\n");
+			bwprintf("Kernel running...\r\n");
 			handleSyscall(currentTask, &kernelData);
 			if (!hasExited(currentTask)) {
 				schedulerAdd(&schedStruct, currentTask);
 			} else {
-				//bwprintf("Not adding task to scheduler - it has quit\n\r");
+				bwprintf("Not adding task to scheduler - it has quit\n\r");
 			}
 		}
 
@@ -233,7 +241,7 @@ int main(void) {
 		boardSetIndicatorLED(0);
 	}
 	bwprintf("System Halted\n\r");
-	while(1) {}
+	//while(1) {}
 
 	return 0x420;
 }

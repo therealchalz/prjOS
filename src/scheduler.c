@@ -22,9 +22,9 @@
  * scheduler.c
  */
 
-#include <string.h>
-#include <scheduler.h>
-#include <bwio.h>
+#include "string.h"
+#include "prjOS/include/scheduler.h"
+#include "prjOS/include/bwio.h"
 
 void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds) {
 	memset(schedStruct, 0, sizeof(SchedulerStructure));

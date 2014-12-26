@@ -23,12 +23,12 @@
  * registerNameserver.c
  */
 
-#include <syscall.h>
-#include <task.h>
-#include <kernel_data.h>
-#include <string.h>
-#include <bwio.h>
-#include <base_tasks/nameserver.h>
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/task.h"
+#include "prjOS/include/kernel_data.h"
+#include "string.h"
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/base_tasks/nameserver.h"
 
 int prjRegisterNameserver(int tid) {
 	int ret;

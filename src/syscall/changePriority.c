@@ -22,8 +22,8 @@
  * changePriority.c
  */
 
-#include <syscall.h>
-#include <task.h>
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/task.h"
 
 int prjChangePriority(int priority) {
 	int ret;

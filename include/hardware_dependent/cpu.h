@@ -36,5 +36,6 @@ int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms);
 void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startFunction);
 
 void contextSwitch(TaskDescriptor *t);
+void hwContextSwitch();
 
 #endif /* CPU_H_ */

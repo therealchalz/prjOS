@@ -90,6 +90,7 @@ int isTaskReady(TaskDescriptor* td) {
 	switch (td->state) {
 	//add other states as required
 	case TASKS_STATE_RUNNING:
+	case TASKS_STATE_HWINT:
 		ret = 1;
 		break;
 	}

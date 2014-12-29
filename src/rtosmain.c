@@ -31,6 +31,7 @@
 #include "prjOS/include/kernel_data.h"
 #include "string.h"
 #include "prjOS/include/base_tasks/nameserver.h"
+#include "inc/hw_nvic.h"
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -105,11 +106,17 @@ void TaskSwitch(TaskDescriptor* t) {
 
 void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	//TODO: if this TD has nothing to to, look for one that has waiting work
-	if (t->state != TASKS_STATE_SYSCALL_BLK) {
+	switch (t->state) {
+	case TASKS_STATE_SYSCALL_BLK:
+	case TASKS_STATE_HWINT:
+		break;
+	default:
 		return;
 	}
 	switch (t->systemCall.syscall) {
 	case SYSCALL_HARDWARE_CALL:
+		setTaskReady(t);
+		bwprintf("H\n\r");
 		break;
 	case SYSCALL_GET_TID:
 		t->systemCall.returnValue = sys_getTid(t);
@@ -203,22 +210,31 @@ int rtos_main(void* firstTaskFn) {
 
 	schedulerAdd(&schedStruct, currentTask);
 
-	int testLoop = 100;
+	int testLoop = 100000;
+	int loopCount = 0;
 
 	//TODO:
 	//return 0;
 
+
+
 	while(testLoop >= 0)
 	{
 		testLoop--;
+		loopCount++;
 		bwprintf("Getting task to schedule...\n\r");
 		schedulerPrintTasks(&schedStruct);
 		currentTask = schedule(&schedStruct);
 		bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
 
 		if (currentTask != 0) {
-			bwprintf("Kernel switching to task...\r\n");
+			bwprintf("%d Kernel switching to task...(td @ %x)\r\n", loopCount, currentTask);
+			//SysTickPeriodSet(16777216);
+			//SysTickPeriodSet(SysCtlClockGet()/1000);
+			HWREG(NVIC_ST_CURRENT)=0;
+			SysTickEnable();
 			prjTaskSwitch(currentTask);
+			SysTickDisable();
 			bwprintf("Kernel running...\r\n");
 			handleSyscall(currentTask, &kernelData);
 			if (!hasExited(currentTask)) {

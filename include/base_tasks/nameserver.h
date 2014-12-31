@@ -37,6 +37,9 @@
 #define NAMESERVER_OPERATION_TOO_LONG	5
 #define NAMESERVER_OPERATION_ERROR		6
 
+//Names consolidated here for system tasks
+#define NAMESERVER_NAME_SERIAL_DRIVER	"serialdriver"
+
 typedef struct NameserverEntry {
 	unsigned int tid;
 	char name[NAMESERVER_MAX_NAME_LENGTH];

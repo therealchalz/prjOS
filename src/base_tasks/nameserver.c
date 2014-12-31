@@ -42,6 +42,8 @@ void nameserverEntry() {
 	int sender;
 	NameserverQuery query;
 
+	prjRegisterNameserver(nameserverTid);
+
 	while(run) {
 
 		bwprintf("NAMESERVER: DEBUG: Waiting for message.\n\r");
@@ -49,6 +51,10 @@ void nameserverEntry() {
 		int receiveRet = prjReceive(&sender, (char*)&query, sizeof(query));
 		if (receiveRet < 0) {
 			bwprintf("NAMESERVER: ERR: Receive returned %d.\n\r", receiveRet);
+		}
+
+		if (receiveRet != sizeof(query)) {
+			prjReply(sender, (char*)&query, receiveRet);
 		}
 
 		if(sender==0) {

@@ -70,7 +70,7 @@ int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms) {
 	*(--newStack) = parms->cpuSpecific.regs[3];
 	*(--newStack) = parms->cpuSpecific.regs[2];
 	*(--newStack) = parms->cpuSpecific.regs[1];
-	*(--newStack) = parms->cpuSpecific.regs[0];
+	*(--newStack) = parms->cpuSpecific.regs[0];	//This one is overwritten with the syscall return value in the context handler
 	*(--newStack) = parms->cpuSpecific.exceptionReturn;
 	*(--newStack) = parms->cpuSpecific.regs[11];
 	*(--newStack) = parms->cpuSpecific.regs[10];

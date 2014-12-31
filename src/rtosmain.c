@@ -19,7 +19,8 @@
  *     Charles Hache <chache@brood.ca> - initial API and implementation
 ***************************************/
 
-
+#include <stdint.h>
+#include <stdbool.h>
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/hardware_dependent/cpu.h"
 #include "prjOS/include/hardware_dependent/cpu_defs.h"
@@ -31,6 +32,7 @@
 #include "prjOS/include/kernel_data.h"
 #include "string.h"
 #include "prjOS/include/base_tasks/nameserver.h"
+#include "prjOS/include/base_tasks/task_serialDriver.h"
 #include "inc/hw_nvic.h"
 
 #ifdef DEBUG
@@ -43,60 +45,38 @@ void __error__(char *filename, unsigned long line) {
 }
 #endif
 
-void testTask() {
-	int tid = prjGetTid();
-	int pid = prjGetParentTid();
+void initTask(void* firstTaskfn) {
 
-	bwprintf("Task Running.  TaskID: %d.  Parent: %d\n\r", tid, pid);
+	uint32_t tid;
+	char dummy = 0;
 
-	prjYield();
+	bwprintf("Init starting\n\r");
+	tid = prjCreate(0, nameserverEntry);
+	prjSend(tid, &dummy, 1, &dummy, 1);
+	bwprintf("Init: Nameserver running\n\r");
 
-	bwprintf("Task Running.  TaskID: %d.  Parent: %d\n\r", tid, pid);
+	tid = prjCreate(0, task_serialDriver);
+	prjSend(tid, &dummy, 1, &dummy, 1);
 
-	prjExit();
-}
+	bwprintf("Init: Serial driver running\n\r");
 
-void firstUserTask() {
-	bwprintf("First User Task Created %d\n\r", prjCreate(2, &testTask));
-	bwprintf("First User Task Created %d\n\r", prjCreate(2, &testTask));
-	bwprintf("First User Task Created %d\n\r", prjCreate(0, &testTask));
-	bwprintf("First User Task Created %d\n\r", prjCreate(0, &testTask));
-	bwprintf("First Exiting\n\r");
-	prjExit();
-}
+	bwprintf("Init: Creating first task (%x)\n\r", firstTaskfn);
+	prjCreate(0, firstTaskfn);
 
-void firstTask() {
-	bwprintf("Init Task Starting...\n\r");
-	int nameserver = prjCreate(3, &nameserverEntry);
-	bwprintf("Init created nameserver: %d\n\r", nameserver);
-	prjRegisterNameserver(nameserver);
-	prjRegisterAs("firstTask");
-	bwprintf("Init created %d\n\r", prjCreate(1, &firstUserTask));
-	prjChangePriority(TASKS_MAX_PRIORITY-1);
-	int x = 5;
-	while(x > 0) {
+	while (1) {
 		prjYield();
-		x--;
 	}
-
-	bwprintf("Nameserver TID should be: %d\n\r", prjWhoIs(NAMESERVER_NAMESTR));
-	bwprintf("First Task TID should be: %d\n\r", prjWhoIs("firstTask"));
-	NameserverQuery send;
-	NameserverQuery receive;
-	strcpy(send.buffer, "TESTING! 420?");
-	send.bufferLen = strlen("TESTING! 420?");
-	send.operation = NAMESERVER_OPERATION_EXIT;
-	bwprintf("Quit command to nameserver returned: %d\n\r", prjSend(nameserver, (char*)&send, sizeof(NameserverQuery), (char*)&receive, sizeof(NameserverQuery)));
-	bwprintf("Idle Task quitting\r\n");
 	prjExit();
 }
 
-TaskDescriptor* createFirstTask(TaskDescriptor *tds, int count, void* firstTaskFn) {
+void createFirstTask(KernelData* kernelData, TaskDescriptor *tds, int count, void* firstTaskFn) {
 	TaskCreateParameters params;
-	setupDefaultCreateParameters(&params, firstTaskFn);
+	setupDefaultCreateParameters(&params, initTask);
 	params.parentId = 0;
 	params.priority = 0;
-	return createTask(tds, count, &params);
+	TaskDescriptor* td = createTask(tds, count, &params);
+	td->systemCall.returnValue = (uint32_t)firstTaskFn;
+	schedulerAdd(kernelData->schedulerStructure, td);
 }
 
 void TaskSwitch(TaskDescriptor* t) {
@@ -134,7 +114,10 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 		t->systemCall.returnValue = sys_send(t, kernelData);
 		break;
 	case SYSCALL_RECEIVE:
-		t->systemCall.returnValue = sys_receive(t, kernelData);
+		t->systemCall.returnValue = sys_receive(t, kernelData, true);
+		break;
+	case SYSCALL_RECEIVE_NONBLOCK:
+		t->systemCall.returnValue = sys_receive(t, kernelData, false);
 		break;
 	case SYSCALL_REPLY:
 		t->systemCall.returnValue = sys_reply(t, kernelData);
@@ -202,13 +185,8 @@ int rtos_main(void* firstTaskFn) {
 
 	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
 
-	//Create first task
-	TaskDescriptor* currentTask = createFirstTask(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS, firstTaskFn);
-
-	bwprintf("First Task:\n\r");
-	printTd(currentTask, 0);
-
-	schedulerAdd(&schedStruct, currentTask);
+	//Create first tasks
+	createFirstTask(&kernelData, taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS, firstTaskFn);
 
 	int testLoop = 100000;
 	int loopCount = 0;
@@ -216,7 +194,7 @@ int rtos_main(void* firstTaskFn) {
 	//TODO:
 	//return 0;
 
-
+	TaskDescriptor* currentTask;
 
 	while(testLoop >= 0)
 	{

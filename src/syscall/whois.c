@@ -37,6 +37,9 @@ int prjWhoIs (char *name) {
 		asm (svcArg(SYSCALL_WHOISNS));
 		asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	} else {
+		int nsTid = prjWhoIs(NAMESERVER_NAMESTR);
+		if (nsTid <= 0)
+			return ERR_WHOIS_WRONG_TID;
 		//Construct query
 		NameserverQuery query;
 		NameserverQuery reply;
@@ -46,7 +49,7 @@ int prjWhoIs (char *name) {
 		memcpy(query.buffer, name, strlen(name)+1);
 		query.bufferLen = strlen(name)+1;
 
-		ret = prjSend(prjWhoIs(NAMESERVER_NAMESTR), (char*)&query, sizeof(query), (char*)&reply, sizeof(reply));
+		ret = prjSend(nsTid, (char*)&query, sizeof(query), (char*)&reply, sizeof(reply));
 		switch (ret) {
 		case ERR_SEND_TASKID_DNE:
 			bwprintf("WHOIS: ERR: Name server tid invalid.\n\r");

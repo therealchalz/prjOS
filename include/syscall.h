@@ -25,6 +25,9 @@
 #ifndef SYSCALL_H_
 #define SYSCALL_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
 //SVC call parameters (immediate values)
 #define SYSCALL_HARDWARE_CALL		0	//Do not change this one
 #define SYSCALL_GET_TID				1
@@ -39,6 +42,7 @@
 #define SYSCALL_REPLY				10
 #define SYSCALL_WHOISNS				11
 #define SYSCALL_REGISTERNS			12
+#define SYSCALL_RECEIVE_NONBLOCK	13
 
 //TODO: Consolidate error codes.  Try to match POSIX ones?
 
@@ -54,7 +58,7 @@
 #define ERR_SEND_BAD_BUFFER			(-4)	/* Either the send or the reply buffer is invalid (or the reply buffer has 0 size) */
 #define ERR_SEND_EXITED				(-5)	/* The other task has exited before this request could be completed */
 
-/* RECEIVE error codes int ret;*/
+/* RECEIVE error codes */
 #define ERR_RECEIVE_BUFFER_TOO_SMALL	(-1)	/* The message buffer wasn't large enough to hold the whole message */
 #define ERR_RECEIVE_BAD_BUFFER		(-2)	/* The message buffer is invalid */
 #define ERR_RECEIVE_NOSEND			(-3)	/* There was no sender on a non-blocking receive call */
@@ -87,9 +91,12 @@ int prjCreate(int priority, void* entryPoint);
 int prjChangePriority(int newPriority);
 int prjSend(int tid, char *msg, int msgLen, char *reply, int replyLen);
 int prjReceive(int *tid, char *msg, int msgLen);
+int prjReceiveNonBlocking(int *tid, char *msg, int msgLen);
 int prjReply(int tid, char *msg, int msgLen);
 int prjWhoIs(char *name);
 int prjRegisterNameserver(int tid);
 int prjRegisterAs(char* name);
+uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid);
+uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid);
 
 #endif /* SYSCALL_H_ */

@@ -36,6 +36,13 @@ int prjReceive(int *tid, char *msg, int msgLen) {
 	return ret;
 }
 
+int prjReceiveNonBlocking(int *tid, char *msg, int msgLen) {
+	int ret;
+	asm (svcArg(SYSCALL_RECEIVE_NONBLOCK));
+	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
+	return ret;
+}
+
 static TaskDescriptor* pop(TaskDescriptor* active){
 	if(active->sendQueueHead!=0){
 	  TaskDescriptor * task = (TaskDescriptor *)active->sendQueueHead;
@@ -46,7 +53,7 @@ static TaskDescriptor* pop(TaskDescriptor* active){
 	return 0;
 }
 
-int sys_receive(TaskDescriptor* active, KernelData * kData){
+int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 	//NOTE: The return value can also be set from Send();ERR_RECEIVE_BUFFER_TOO_SMALL
 
 	int destLen = active->systemCall.param3;
@@ -105,10 +112,19 @@ int sys_receive(TaskDescriptor* active, KernelData * kData){
 
 	} else {
 
-		bwprintf("RECEIVE: DEBUG: Sender is not ready, blocking.\n\r");
+		if (blocking) {
 
-		// Set state to send blocked
-		active->state = TASKS_STATE_SEND_BLK;
+			bwprintf("RECEIVE: DEBUG: Sender is not ready, blocking.\n\r");
+
+			// Set state to send blocked
+			active->state = TASKS_STATE_SEND_BLK;
+		} else {
+			bwprintf("RECEIVE: DEBUG: Sender is not ready, but not blocking\n\r");
+
+			active->state = TASKS_STATE_RUNNING;
+
+			ret = ERR_RECEIVE_NOSEND;
+		}
 	}
 
 	bwprintf("RECEIVE: DEBUG: Done Receiving...\n\r");

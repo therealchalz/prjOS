@@ -38,11 +38,11 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 	cpuSetupTaskDefaultParameters(&(params->cpuSpecific), taskEntry);
 }
 
-void reinitializeTd(TaskDescriptor* td, int* stackBase) {
+void reinitializeTd(TaskDescriptor* td) {
 	int oldId = td->taskId;
 	int idx = oldId & TASKS_ID_INDEX_MASK;
 	int stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
-	int* stackPointer = (int*)(stackBase - stackOffset);
+	int* stackPointer = (int*)(STACK_BASE - stackOffset);
 	memset(td, 0, sizeof(TaskDescriptor));
 	td->taskId = oldId;
 	td->stackPointer = stackPointer;
@@ -51,10 +51,11 @@ void reinitializeTd(TaskDescriptor* td, int* stackBase) {
 void initializeTds(TaskDescriptor* tds, int count, int* stackBase) {
 	memset(tds, 0, count*sizeof(TaskDescriptor));
 
+	int base = STACK_BASE;
 	int stackOffset = KERNEL_STACK_SIZE;
 	int i;
 	for (i=0; i<count; i++) {
-		tds[i].stackPointer = (int*)(stackBase - stackOffset);
+		tds[i].stackPointer = (int*)(base - stackOffset);
 		tds[i].state = TASKS_STATE_INVALID;
 		tds[i].taskId = i;
 		stackOffset += KERNEL_TASK_DEFAULT_STACK_SIZE;
@@ -150,7 +151,7 @@ TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParam
 
 	if (ret != 0) {
 		//TODO:
-		//reinitializeTd(ret);
+		reinitializeTd(ret);
 
 		ret->taskId += TASKS_ID_GENERATION_INCREMENT;
 		ret->parentId = parms->parentId;

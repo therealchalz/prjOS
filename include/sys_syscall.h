@@ -36,7 +36,7 @@ int sys_create(TaskDescriptor* active, TaskCreateParameters* params);
 int sys_changePriority(TaskDescriptor* active);
 int sys_exit(TaskDescriptor* active);
 int sys_send(TaskDescriptor* active, KernelData* kData);
-int sys_receive(TaskDescriptor* active, KernelData* kData);
+int sys_receive(TaskDescriptor* active, KernelData* kData, bool block);
 int sys_reply(TaskDescriptor* active, KernelData* kData);
 int sys_whoIsNs(TaskDescriptor* active, KernelData* kData);
 int sys_registerNs(TaskDescriptor* active, KernelData* kData);

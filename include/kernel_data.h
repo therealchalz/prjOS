@@ -29,9 +29,9 @@
 
 typedef struct KernelData {
 	TaskDescriptor* taskDescriptorList;	// pointer to the list of all tasks
-	unsigned int tdCount;				// size of task list
+	uint32_t tdCount;				// size of task list
 	SchedulerStructure* schedulerStructure;	// Used to hold the state of the scheduler
-	int nameserverTid;
+	uint32_t nameserverTid;
 } KernelData;
 
 #endif /* KERNEL_DATA_H_ */

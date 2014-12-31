@@ -60,7 +60,7 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 	int* tid = (int*)active->systemCall.param1;
 	char* dest = (char*) active->systemCall.param2;
 
-	bwprintf("RECEIVE: DEBUG: Receiving... Message length: %d\n\r", destLen);
+	//bwprintf("RECEIVE: DEBUG: Receiving... Message length: %d\n\r", destLen);
 
 	/* Check if buffer is valid */
 	if (dest == 0)
@@ -71,7 +71,7 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 
 	if (senderTask!=0) {
 
-		bwprintf("RECEIVE: DEBUG: Sender is already ready.\n\r");
+		//bwprintf("RECEIVE: DEBUG: Sender is already ready.\n\r");
 
 		// Set the sender to state reply blocked
 		senderTask->state = TASKS_STATE_RPLY_BLK;
@@ -87,14 +87,14 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 
 		memcpy(dest, source, size);
 
-		bwprintf("RECEIVE: DEBUG: Trying to receive\n\r");
+		//bwprintf("RECEIVE: DEBUG: Trying to receive\n\r");
 
 		// Set this task's state to running
 		active->state = TASKS_STATE_RUNNING;
 		// Set tid
 		*tid = senderTask->taskId;
 
-		bwprintf("RECEIVE: DEBUG: senderTaskId: %d\n\r", senderTask->taskId);
+		//bwprintf("RECEIVE: DEBUG: senderTaskId: %d\n\r", senderTask->taskId);
 
 		if(size != sourceSize){
 			ret = ERR_RECEIVE_BUFFER_TOO_SMALL;
@@ -114,12 +114,12 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 
 		if (blocking) {
 
-			bwprintf("RECEIVE: DEBUG: Sender is not ready, blocking.\n\r");
+			//bwprintf("RECEIVE: DEBUG: Sender is not ready, blocking.\n\r");
 
 			// Set state to send blocked
 			active->state = TASKS_STATE_SEND_BLK;
 		} else {
-			bwprintf("RECEIVE: DEBUG: Sender is not ready, but not blocking\n\r");
+			//bwprintf("RECEIVE: DEBUG: Sender is not ready, but not blocking\n\r");
 
 			active->state = TASKS_STATE_RUNNING;
 
@@ -127,7 +127,7 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 		}
 	}
 
-	bwprintf("RECEIVE: DEBUG: Done Receiving...\n\r");
+	//bwprintf("RECEIVE: DEBUG: Done Receiving...\n\r");
 
 	return ret;
 }

@@ -15,7 +15,6 @@
 #include "prjOS/include/base_tasks/nameserver.h"
 
 #define MAX_MESSAGE_LEN			512
-#define MAX_PENDING_MESSAGES	6
 
 #define MESSAGE_GET_CHAR				0x1
 #define MESSAGE_GET_CHAR_NONBLOCKING	0x2

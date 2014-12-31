@@ -45,7 +45,7 @@ int sys_reply(TaskDescriptor* active, KernelData *kData){
 	char* reply = (char*)active->systemCall.param2;
 	int replyLen = active->systemCall.param3;
 
-	bwprintf("REPLY: DEBUG: Tid: %d, ReplyLen: %d\n\r", active->taskId,replyLen);
+	//bwprintf("REPLY: DEBUG: Tid: %d, ReplyLen: %d\n\r", active->taskId,replyLen);
 
 	/* Is the tid possible? */
 	int generationId = (tid & TASKS_ID_GENERATION_MASK) >> TASKS_ID_GENERATION_SHIFTBITS;
@@ -102,7 +102,7 @@ int sys_reply(TaskDescriptor* active, KernelData *kData){
 	  ret = ERR_REPLY_NOT_REPLY_BLOCKED;
 	}
 
-	bwprintf("REPLY: DEBUG: Done Replying...\n\r");
+	//bwprintf("REPLY: DEBUG: Done Replying...\n\r");
 	active->state = TASKS_STATE_RUNNING;
 	return ret;
 }

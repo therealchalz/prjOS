@@ -19,6 +19,7 @@
  *     Charles Hache <chache@brood.ca> - initial API and implementation
 ***************************************/
 
+#include <prjOS/include/base_tasks/serialDriver.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "prjOS/include/bwio.h"
@@ -32,7 +33,6 @@
 #include "prjOS/include/kernel_data.h"
 #include "string.h"
 #include "prjOS/include/base_tasks/nameserver.h"
-#include "prjOS/include/base_tasks/task_serialDriver.h"
 #include "inc/hw_nvic.h"
 
 #ifdef DEBUG
@@ -45,29 +45,9 @@ void __error__(char *filename, unsigned long line) {
 }
 #endif
 
-void initTask(void* firstTaskfn) {
+extern void initTask(void* firstTaskfn);
 
-	uint32_t tid;
-	char dummy = 0;
 
-	bwprintf("Init starting\n\r");
-	tid = prjCreate(0, nameserverEntry);
-	prjSend(tid, &dummy, 1, &dummy, 1);
-	bwprintf("Init: Nameserver running\n\r");
-
-	tid = prjCreate(0, task_serialDriver);
-	prjSend(tid, &dummy, 1, &dummy, 1);
-
-	bwprintf("Init: Serial driver running\n\r");
-
-	bwprintf("Init: Creating first task (%x)\n\r", firstTaskfn);
-	prjCreate(0, firstTaskfn);
-
-	while (1) {
-		prjYield();
-	}
-	prjExit();
-}
 
 void createFirstTask(KernelData* kernelData, TaskDescriptor *tds, int count, void* firstTaskFn) {
 	TaskCreateParameters params;
@@ -96,7 +76,6 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	switch (t->systemCall.syscall) {
 	case SYSCALL_HARDWARE_CALL:
 		setTaskReady(t);
-		bwprintf("H\n\r");
 		break;
 	case SYSCALL_GET_TID:
 		t->systemCall.returnValue = sys_getTid(t);
@@ -198,41 +177,27 @@ int rtos_main(void* firstTaskFn) {
 
 	while(testLoop >= 0)
 	{
-		testLoop--;
+		//testLoop--;
 		loopCount++;
-		bwprintf("Getting task to schedule...\n\r");
-		schedulerPrintTasks(&schedStruct);
+		//bwprintf("Getting task to schedule...\n\r");
+		//schedulerPrintTasks(&schedStruct);
 		currentTask = schedule(&schedStruct);
-		bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
+		//bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
 
 		if (currentTask != 0) {
-			bwprintf("%d Kernel switching to task...(td @ %x)\r\n", loopCount, currentTask);
-			//SysTickPeriodSet(16777216);
-			//SysTickPeriodSet(SysCtlClockGet()/1000);
-			HWREG(NVIC_ST_CURRENT)=0;
+			//bwprintf("%d Kernel switching to task...(td @ %x)\r\n", loopCount, currentTask);
+			HWREG(NVIC_ST_CURRENT)=0;	//resets systick counter
 			SysTickEnable();
 			prjTaskSwitch(currentTask);
 			SysTickDisable();
-			bwprintf("Kernel running...\r\n");
+			//bwprintf("Kernel running...\r\n");
 			handleSyscall(currentTask, &kernelData);
 			if (!hasExited(currentTask)) {
 				schedulerAdd(&schedStruct, currentTask);
 			} else {
-				bwprintf("Not adding task to scheduler - it has quit\n\r");
+				//bwprintf("Not adding task to scheduler - it has quit\n\r");
 			}
 		}
-
-		boardSetIndicatorLED(1);
-		long l = 0x0000ffff;
-		while (l > 0) {
-			l--;
-		}
-		boardSetIndicatorLED(0);
-		l = 0x0000ffff;
-		while (l > 0) {
-			l--;
-		}
-		boardSetIndicatorLED(0);
 	}
 	bwprintf("System Halted\n\r");
 	//while(1) {}

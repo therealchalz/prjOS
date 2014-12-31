@@ -23,3 +23,7 @@ int bwsprintf(char *out, const char *format) {
 	return esprintf2(out, format, varg);
 	//return 0;
 }
+
+void bwputc(char out) {
+	eputc(out);
+}

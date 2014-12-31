@@ -54,7 +54,9 @@ void nameserverEntry() {
 		}
 
 		if (receiveRet != sizeof(query)) {
+			//echo invalid messages - useful for debugging and seeing if the server is booted yet.
 			prjReply(sender, (char*)&query, receiveRet);
+			continue;
 		}
 
 		if(sender==0) {

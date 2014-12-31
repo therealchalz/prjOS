@@ -4,7 +4,7 @@
  *  Created on: Dec 29, 2014
  *      Author: che
  */
-#include "prjOS/include/base_tasks/task_serialDriver.h"
+#include <prjOS/include/base_tasks/serialDriver.h>
 
 static void processMessage(SerialDriverData* data, uint32_t otherTask, char* message, uint32_t size) {
 	if (size < 4) {
@@ -12,8 +12,10 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 		return;
 	}
 
+	//read the message type out of the message and move the data pointer forward
 	uint32_t messageType = *((uint32_t*)message);
 	message+=sizeof(uint32_t);
+
 	uint32_t ch;
 
 	switch (messageType) {
@@ -30,6 +32,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 		prjReply(otherTask, (char*)&ch, 4);
 		break;
 	case MESSAGE_SEND_MESSAGE:
+		//[type(4)][len(2)][msg(len bytes)]
 		if (size < 7)
 			return;
 		uint16_t msgLen = *((uint16_t*) message);
@@ -38,12 +41,13 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 			msgLen = MAX_MESSAGE_LEN;
 
 		char* msg = message;
-
-		if (msg[msgLen-1] != 0) {
-			bwprintf("ERROR: SerialDriver received non-null terminal string (length %d)", msgLen);
-		} else {
-			bwprintf("%s", msg);
+		uint16_t bytesSent = msgLen;
+		while (msgLen--) {
+			bwputc(*msg);
+			msg++;
 		}
+
+		prjReply(otherTask, (char*)&bytesSent, 2);
 
 		break;
 	case MESSAGE_QUIT:
@@ -73,7 +77,15 @@ void task_serialDriver() {
 
 	while (data.keepRunning) {
 
-		msgLen = prjReceive(&otherTask, message, MAX_MESSAGE_LEN);
+		// If someone is blocked waiting for data, we constantly poll to see if
+		// a character has arrived, otherwise we just block until someone has a
+		// request.
+		//TODO: improve fairness, or have some form of locking
+		if (data.blockedCharTid) {
+			msgLen = prjReceiveNonBlocking(&otherTask, message, MAX_MESSAGE_LEN);
+		} else {
+			msgLen = prjReceive(&otherTask, message, MAX_MESSAGE_LEN);
+		}
 		if (msgLen > 0) {
 			processMessage(&data, otherTask, message, msgLen);
 		}

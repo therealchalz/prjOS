@@ -4,10 +4,10 @@
  *  Created on: Dec 29, 2014
  *      Author: che
  */
+#include <prjOS/include/base_tasks/serialDriver.h>
 #include "prjOS/include/syscall.h"
 #include "prjOS/include/task.h"
 #include "prjOS/include/base_tasks/nameserver.h"
-#include "prjOS/include/base_tasks/task_serialDriver.h"
 
 uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid) {
 	if (serialTid == 0) {

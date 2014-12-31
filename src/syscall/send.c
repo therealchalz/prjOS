@@ -54,7 +54,7 @@ static void push(TaskDescriptor* active, TaskDescriptor* receiving){
 int sys_send(TaskDescriptor* active, KernelData * kData) {
 	//NOTE: The return value can also be set from Reply();ERR_SEND_INCOMPLETE
 
-	bwprintf("SEND: DEBUG: Sending...\n\r");
+	//bwprintf("SEND: DEBUG: Sending...\n\r");
 
 	int ret = 0;
 
@@ -87,10 +87,10 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 	}
 
 	// Is the receiver ready?
-	bwprintf("SEND: DEBUG: Checking Receiver\n\r");
+	//bwprintf("SEND: DEBUG: Checking Receiver\n\r");
 	if (receiveTask->state == TASKS_STATE_SEND_BLK) {
 
-		bwprintf("SEND: DEBUG: Receiver is already ready.\n\r");
+		//bwprintf("SEND: DEBUG: Receiver is already ready.\n\r");
 
 		// Update the receiver's state
 		receiveTask->state = TASKS_STATE_RUNNING;
@@ -120,7 +120,7 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 
 	} else {
 
-		bwprintf("SEND: DEBUG: Receiver not ready; blocking.\n\r");
+		//bwprintf("SEND: DEBUG: Receiver not ready; blocking.\n\r");
 		//Receiver is not ready, increase its priority if required
 		//Note that this won't have an effect until the next time the task
 		// gets put in the ready queue.
@@ -135,7 +135,7 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 		push(active,receiveTask);
 	}
 
-	bwprintf("SEND: DEBUG: Done Sending...\n\r");
+	//bwprintf("SEND: DEBUG: Done Sending...\n\r");
 
 	return ret;
 }

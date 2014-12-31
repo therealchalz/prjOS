@@ -98,5 +98,6 @@ int prjRegisterNameserver(int tid);
 int prjRegisterAs(char* name);
 uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid);
 uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid);
+uint32_t prjPutStr(const char* str, uint16_t len, uint32_t serialTid);
 
 #endif /* SYSCALL_H_ */

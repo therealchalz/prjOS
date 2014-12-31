@@ -29,7 +29,7 @@
 void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds) {
 	memset(schedStruct, 0, sizeof(SchedulerStructure));
 	int i;
-	for (i = 0; i < KERNEL_MAX_NUMBER_OF_TASKS; i++) {
+	for (i = 0; i < KERNEL_NUMBER_OF_TASK_DESCRIPTORS; i++) {
 		schedStruct->allTasks[i].td = &tds[i];
 		schedStruct->allTasks[i].next = 0;
 	}
@@ -39,7 +39,7 @@ SchedulerTask* getSchedulerTask(SchedulerStructure* schedStruct, TaskDescriptor*
 	//TODO: this is sloppy, speed it up
 	SchedulerTask* ret = 0;
 	int i;
-	for (i = 0; i < KERNEL_MAX_NUMBER_OF_TASKS; i++) {
+	for (i = 0; i < KERNEL_NUMBER_OF_TASK_DESCRIPTORS; i++) {
 		if (schedStruct->allTasks[i].td == td) {
 			ret = &(schedStruct->allTasks[i]);
 			break;

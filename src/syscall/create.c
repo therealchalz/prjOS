@@ -35,6 +35,7 @@ int prjCreate(int priority, void* entryPoint) {
 int sys_create(TaskDescriptor* active, TaskCreateParameters* params) {
 	setupDefaultCreateParameters(params, (void*)active->systemCall.param2);
 	params->parentId = active->taskId;
+	params->taskType = TASK_TYPE_REGULAR;
 	//lets not let someone create a task with a higher priority then they are
 	int priority = active->systemCall.param1;
 	if (priority < 0 && priority >= TASKS_MAX_PRIORITY) {

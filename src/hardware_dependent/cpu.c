@@ -49,10 +49,10 @@ void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startF
 	params->startFunction = startFunction;
 }
 
-int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms) {
+uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *parms) {
 	//Need to set up stack like this:
 	//R4,R5,R6,R7,R8,R9,R10,R11,LR(EXC_RETURN),R0,R1,R2,R3,R12,LR(Pre exception),PC(Pre exception),xPSR(Pre exception)
-	int* newStack = stackLocation;
+	uint32_t* newStack = stackLocation;
 	//push on 6 dummy things - the context switch expects the compiler
 	//to push the syscall parameters onto the stack.  If we don't make
 	//dummy space here, if we were to call a syscall as soon as our task starts
@@ -64,7 +64,7 @@ int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms) {
 	}
 	//push 17 things on the stack
 	*(--newStack) = 0x01000000;
-	*(--newStack) = ((int)(parms->cpuSpecific.startFunction));
+	*(--newStack) = ((uint32_t)(parms->cpuSpecific.startFunction));
 	*(--newStack) = 0xFFFFFFFF;
 	*(--newStack) = parms->cpuSpecific.regs[12];
 	*(--newStack) = parms->cpuSpecific.regs[3];
@@ -79,7 +79,7 @@ int* cpuCreateTask(int* stackLocation, const TaskCreateParameters *parms) {
 	*(--newStack) = parms->cpuSpecific.regs[7];
 	*(--newStack) = parms->cpuSpecific.regs[6];
 	*(--newStack) = parms->cpuSpecific.regs[5];
-	*(--newStack) = (int)parms->cpuSpecific.regs[4];
+	*(--newStack) = (uint32_t)parms->cpuSpecific.regs[4];
 
 	return newStack;
 }

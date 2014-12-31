@@ -148,10 +148,10 @@ int rtos_main(void* firstTaskFn) {
 	printCEnvironmentSettings();
 
 	//Put the TDs on the kernel stack
-	TaskDescriptor taskDescriptors[KERNEL_MAX_NUMBER_OF_TASKS];
-	initializeTds(taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS, stackBasePtr);
+	TaskDescriptor taskDescriptors[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
+	initializeTds(taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, STACK_BASE);
 
-	bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor));
+	bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor));
 	//Scheduler stuff
 	SchedulerStructure schedStruct;
 	schedulerInit(&schedStruct, taskDescriptors);
@@ -159,13 +159,13 @@ int rtos_main(void* firstTaskFn) {
 	KernelData kernelData;
 	memset(&kernelData, 0, sizeof(KernelData));
 	kernelData.taskDescriptorList = taskDescriptors;
-	kernelData.tdCount = KERNEL_MAX_NUMBER_OF_TASKS;
+	kernelData.tdCount = KERNEL_NUMBER_OF_TASK_DESCRIPTORS;
 	kernelData.schedulerStructure = &schedStruct;
 
-	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_MAX_NUMBER_OF_TASKS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
+	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
 
 	//Create first tasks
-	createFirstTask(&kernelData, taskDescriptors, KERNEL_MAX_NUMBER_OF_TASKS, firstTaskFn);
+	createFirstTask(&kernelData, taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, firstTaskFn);
 
 	int testLoop = 100000;
 	int loopCount = 0;

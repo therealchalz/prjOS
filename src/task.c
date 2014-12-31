@@ -34,31 +34,46 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 	memset(params, 0, sizeof(TaskCreateParameters));
 
 	params->stackPointer = 0;	//use default
+	params->taskType = TASK_TYPE_REGULAR;	//Regular stack size
 
 	cpuSetupTaskDefaultParameters(&(params->cpuSpecific), taskEntry);
 }
 
-void reinitializeTd(TaskDescriptor* td) {
+void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
+
+	if (stackBase == 0) {
+		stackBase = (uint32_t*)STACK_BASE;
+	}
+
 	uint32_t oldId = td->taskId;
 	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
-	uint32_t stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
-	uint32_t* stackPointer = (uint32_t*)(STACK_BASE - stackOffset);
+
 	memset(td, 0, sizeof(TaskDescriptor));
+
+	uint32_t stackOffset;
+
+	if (idx >= 0 && idx < KERNEL_NUMBER_OF_TASKS) {
+		td->taskType = TASK_TYPE_REGULAR;
+		stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
+	} else if (idx >= KERNEL_NUMBER_OF_TASKS && idx < KERNEL_NUMBER_OF_MICROTASKS) {
+		td->taskType = TASK_TYPE_MICRO;
+		stackOffset = KERNEL_STACK_SIZE +
+				(KERNEL_NUMBER_OF_TASKS * KERNEL_TASK_DEFAULT_STACK_SIZE) +
+				((idx-KERNEL_NUMBER_OF_TASKS) * KERNEL_MICROTASK_DEFAULT_STACK_SIZE);
+	}
+	uint32_t stackPointer = ((uint32_t)stackBase - stackOffset);
+
 	td->taskId = oldId;
-	td->stackPointer = stackPointer;
+	td->stackPointer = (uint32_t*)stackPointer;
+	td->state = TASKS_STATE_INVALID;
 }
 
 void initializeTds(TaskDescriptor* tds, uint32_t count, uint32_t* stackBase) {
 	memset(tds, 0, count*sizeof(TaskDescriptor));
-
-	uint32_t base = STACK_BASE;
-	uint32_t stackOffset = KERNEL_STACK_SIZE;
-	uint32_t i;
+	uint16_t i;
 	for (i=0; i<count; i++) {
-		tds[i].stackPointer = (uint32_t*)(base - stackOffset);
-		tds[i].state = TASKS_STATE_INVALID;
 		tds[i].taskId = i;
-		stackOffset += KERNEL_TASK_DEFAULT_STACK_SIZE;
+		reinitializeTd(&tds[i], stackBase);
 	}
 }
 void printTd(TaskDescriptor* td, uint32_t stackAmount) {
@@ -142,7 +157,18 @@ TaskDescriptor* createTask(TaskDescriptor *tds, uint32_t count, const TaskCreate
 	// Search for available task descriptor
 	uint32_t i;
 	TaskDescriptor* ret = 0;
-	for (i=0; i<count; i++) {
+	uint32_t minIdx, maxIdx;
+	switch (parms->taskType) {
+	case TASK_TYPE_REGULAR:
+		minIdx = 0;
+		maxIdx = KERNEL_NUMBER_OF_TASKS-1;
+		break;
+	case TASK_TYPE_MICRO:
+		minIdx = KERNEL_NUMBER_OF_TASKS;
+		maxIdx = KERNEL_NUMBER_OF_MICROTASKS-1;
+		break;
+	}
+	for (i=minIdx; i<=maxIdx; i++) {
 		if (isTdAvailable(&tds[i])) {
 			ret = &tds[i];
 			break;
@@ -150,8 +176,7 @@ TaskDescriptor* createTask(TaskDescriptor *tds, uint32_t count, const TaskCreate
 	}
 
 	if (ret != 0) {
-		//TODO:
-		reinitializeTd(ret);
+		reinitializeTd(ret, 0);
 
 		ret->taskId += TASKS_ID_GENERATION_INCREMENT;
 		ret->parentId = parms->parentId;

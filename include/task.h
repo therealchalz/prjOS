@@ -49,6 +49,9 @@
 #define TASKS_ID_GENERATION_SHIFTBITS	12
 #define TASKS_ID_INDEX_MASK				0x00000FFF
 
+#define TASK_TYPE_REGULAR		1
+#define TASK_TYPE_MICRO			2
+
 typedef struct SystemCall {
 	uint32_t syscall;	//0 means hardware interrupted, anything else = syscall
 	uint32_t returnValue;
@@ -68,6 +71,7 @@ typedef struct TaskDescriptor {
 	SystemCall systemCall;
 	uint32_t state;
 	uint32_t priority;
+	uint32_t taskType;
 	struct TaskDescriptor* sendQueueNext;
 	struct TaskDescriptor* sendQueueHead;
 	struct TaskDescriptor* sendQueueTail;
@@ -77,6 +81,7 @@ typedef struct TaskCreateParameters {
 	uint32_t parentId;		//OS-assigned task parent task Id
 	uint32_t* stackPointer;
 	uint32_t priority;
+	uint32_t taskType;
 	//Hardware-dependent parameters
 	TaskCpuCreateParameters cpuSpecific;
 } TaskCreateParameters;

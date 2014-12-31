@@ -36,7 +36,7 @@ typedef struct SchedulerTask {
 typedef struct SchedulerStructure {
 	SchedulerTask* queueHeads[TASKS_MAX_PRIORITY];
 	SchedulerTask* queueTails[TASKS_MAX_PRIORITY];
-	SchedulerTask allTasks[KERNEL_MAX_NUMBER_OF_TASKS];
+	SchedulerTask allTasks[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
 } SchedulerStructure;
 
 void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds);

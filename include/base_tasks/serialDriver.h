@@ -21,7 +21,7 @@
 #define MESSAGE_SEND_MESSAGE			0x3
 #define MESSAGE_QUIT					0x4
 
-extern void task_serialDriver();
+extern void serialDriverTask();
 
 typedef struct {
 	bool keepRunning;

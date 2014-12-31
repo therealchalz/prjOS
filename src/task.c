@@ -39,29 +39,29 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 }
 
 void reinitializeTd(TaskDescriptor* td) {
-	int oldId = td->taskId;
-	int idx = oldId & TASKS_ID_INDEX_MASK;
-	int stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
-	int* stackPointer = (int*)(STACK_BASE - stackOffset);
+	uint32_t oldId = td->taskId;
+	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
+	uint32_t stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
+	uint32_t* stackPointer = (uint32_t*)(STACK_BASE - stackOffset);
 	memset(td, 0, sizeof(TaskDescriptor));
 	td->taskId = oldId;
 	td->stackPointer = stackPointer;
 }
 
-void initializeTds(TaskDescriptor* tds, int count, int* stackBase) {
+void initializeTds(TaskDescriptor* tds, uint32_t count, uint32_t* stackBase) {
 	memset(tds, 0, count*sizeof(TaskDescriptor));
 
-	int base = STACK_BASE;
-	int stackOffset = KERNEL_STACK_SIZE;
-	int i;
+	uint32_t base = STACK_BASE;
+	uint32_t stackOffset = KERNEL_STACK_SIZE;
+	uint32_t i;
 	for (i=0; i<count; i++) {
-		tds[i].stackPointer = (int*)(base - stackOffset);
+		tds[i].stackPointer = (uint32_t*)(base - stackOffset);
 		tds[i].state = TASKS_STATE_INVALID;
 		tds[i].taskId = i;
 		stackOffset += KERNEL_TASK_DEFAULT_STACK_SIZE;
 	}
 }
-void printTd(TaskDescriptor* td, int stackAmount) {
+void printTd(TaskDescriptor* td, uint32_t stackAmount) {
 	bwprintf("Task %d\r\n", td->taskId);
 	bwprintf("  Parent: %d\r\n", td->parentId);
 	//bwprintf("  Program Counter: %x\r\n", td->programCounter);
@@ -86,8 +86,8 @@ void printSystemCall(SystemCall* sc) {
 	}
 }
 
-int isTaskReady(TaskDescriptor* td) {
-	int ret = 0;
+uint32_t isTaskReady(TaskDescriptor* td) {
+	uint32_t ret = 0;
 	switch (td->state) {
 	//add other states as required
 	case TASKS_STATE_RUNNING:
@@ -106,7 +106,7 @@ void taskExit(TaskDescriptor* td) {
 	td->state = TASKS_STATE_EXITED;
 }
 
-int isTdAvailable(TaskDescriptor* td) {
+uint32_t isTdAvailable(TaskDescriptor* td) {
 	switch (td->state) {
 	case TASKS_STATE_INVALID:
 	case TASKS_STATE_EXITED:
@@ -116,16 +116,16 @@ int isTdAvailable(TaskDescriptor* td) {
 	return 0;
 }
 
-int hasExited(TaskDescriptor* td) {
+uint32_t hasExited(TaskDescriptor* td) {
 	if (td->state == TASKS_STATE_EXITED)
 		return 1;
 	return 0;
 }
 
-TaskDescriptor* findTd(int td, TaskDescriptor* tdList, int count) {
+TaskDescriptor* findTd(int td, TaskDescriptor* tdList, uint32_t count) {
 	TaskDescriptor* ret = 0;
 
-	int tdIndex = td & TASKS_ID_INDEX_MASK;
+	uint32_t tdIndex = td & TASKS_ID_INDEX_MASK;
 
 	if (tdIndex >= count)
 		return 0;
@@ -138,9 +138,9 @@ TaskDescriptor* findTd(int td, TaskDescriptor* tdList, int count) {
 	return 0;
 }
 
-TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms) {
+TaskDescriptor* createTask(TaskDescriptor *tds, uint32_t count, const TaskCreateParameters *parms) {
 	// Search for available task descriptor
-	int i;
+	uint32_t i;
 	TaskDescriptor* ret = 0;
 	for (i=0; i<count; i++) {
 		if (isTdAvailable(&tds[i])) {

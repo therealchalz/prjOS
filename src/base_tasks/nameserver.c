@@ -46,7 +46,7 @@ void nameserverEntry() {
 
 	while(run) {
 
-		bwprintf("NAMESERVER: DEBUG: Waiting for message.\n\r");
+		//bwprintf("NAMESERVER: DEBUG: Waiting for message.\n\r");
 
 		int receiveRet = prjReceive(&sender, (char*)&query, sizeof(query));
 		if (receiveRet < 0) {
@@ -63,8 +63,8 @@ void nameserverEntry() {
 			bwprintf("NAMESERVER: ERR: Sender is 0.\n\r");
 			continue;
 		}
-		bwprintf("NAMESERVER: DEBUG: Received request from: %d.  Opcode: %d.\n\r", sender, query.operation);
-		bwprintf("NAMESERVER: DEBUG: Got string: %s\n\r", query.buffer);
+		//bwprintf("NAMESERVER: DEBUG: Received request from: %d.  Opcode: %d.\n\r", sender, query.operation);
+		//bwprintf("NAMESERVER: DEBUG: Got string: %s\n\r", query.buffer);
 		int i;
 
 		int replyOperation;
@@ -90,7 +90,7 @@ void nameserverEntry() {
 					break;
 				} else { //check for duplicate entry
 					if (strcmp(query.buffer, nameEntries[i].name) == 0) {
-						bwprintf("NAMESERVER: DEBUG: Successfully overwrote registration.\n\r");
+						//bwprintf("NAMESERVER: DEBUG: Successfully overwrote registration.\n\r");
 						nameEntries[i].tid = sender;
 						replyOperation = NAMESERVER_OPERATION_REGISTER;
 						break;
@@ -107,9 +107,9 @@ void nameserverEntry() {
 
 			//Retreive the info
 			for (i=0; i<NAMESERVER_MAX_NAMES; i++) {
-				bwprintf("NAMESERVER: DEBUG: Checking %s and %s.\n\r", query.buffer, nameEntries[i].name);
+				//bwprintf("NAMESERVER: DEBUG: Checking %s and %s.\n\r", query.buffer, nameEntries[i].name);
 				if (strcmp(query.buffer, nameEntries[i].name) == 0) {
-					bwprintf("NAMESERVER: INFO: Found tid of target.\n\r");
+					//bwprintf("NAMESERVER: INFO: Found tid of target.\n\r");
 					replyOperation = NAMESERVER_OPERATION_WHOIS;
 					returnValue = nameEntries[i].tid;
 					break;
@@ -122,12 +122,12 @@ void nameserverEntry() {
 			}
 			break;
 		case NAMESERVER_OPERATION_EXIT:
-			bwprintf("NAMESERVER: INFO: Received exit request.\n\r");
+			//bwprintf("NAMESERVER: INFO: Received exit request.\n\r");
 			replyOperation = NAMESERVER_OPERATION_WHOIS;
 			run = 0;
 			break;
 		default:
-			bwprintf("NAMESERVER: WARN: Invalid operation query sent to nameserver: %d.\n\r", query.operation);
+			//bwprintf("NAMESERVER: WARN: Invalid operation query sent to nameserver: %d.\n\r", query.operation);
 			replyOperation = NAMESERVER_OPERATION_INVALID;
 			break;
 		}
@@ -138,7 +138,7 @@ void nameserverEntry() {
 		*((int*)reply.buffer) = returnValue;
 		reply.bufferLen = sizeof(returnValue);
 		reply.operation = replyOperation;
-		bwprintf("NAMESERVER: DEBUG: Replying to sender: %d.\n\r", sender);
+		//bwprintf("NAMESERVER: DEBUG: Replying to sender: %d.\n\r", sender);
 		int replyRet = prjReply(sender, (char*)&reply, sizeof(reply));
 		if (replyRet != 0) {
 			bwprintf("NAMESERVER: ERR: Reply returned %d.\n\r", replyRet);

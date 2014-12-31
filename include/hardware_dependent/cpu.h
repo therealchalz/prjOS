@@ -38,4 +38,6 @@ void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startF
 void contextSwitch(TaskDescriptor *t);
 void hwContextSwitch();
 
+uint32_t cpuHelperGetIsr();
+
 #endif /* CPU_H_ */

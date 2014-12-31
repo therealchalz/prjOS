@@ -55,7 +55,6 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 		break;
 	default:
 		prjReply(otherTask, message, size);
-		return;
 		break;
 	}
 }
@@ -63,7 +62,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 //Messages:
 // [4 bytes - message type][optional 2 byte message length incl null termination][optional n byte string, null terminated]
 
-void task_serialDriver() {
+void serialDriverTask() {
 	SerialDriverData data;
 
 	int otherTask;
@@ -85,6 +84,7 @@ void task_serialDriver() {
 			msgLen = prjReceiveNonBlocking(&otherTask, message, MAX_MESSAGE_LEN);
 		} else {
 			msgLen = prjReceive(&otherTask, message, MAX_MESSAGE_LEN);
+			//msgLen = prjReceiveNonBlocking(&otherTask, message, MAX_MESSAGE_LEN);
 		}
 		if (msgLen > 0) {
 			processMessage(&data, otherTask, message, msgLen);
@@ -93,8 +93,11 @@ void task_serialDriver() {
 		if (data.blockedCharTid) {
 			uint32_t ch = readCharNonblocking();
 			if (ch != -1) {
-				prjReply(otherTask, (char*)&ch, 4);
+				uint32_t ret = prjReply(otherTask, (char*)&ch, 4);
 				data.blockedCharTid = 0;
+				if (ret < 0) {
+					bwprintf("Serial Driver: Bad reply return value: %d\n\r", ret);
+				}
 			}
 		}
 

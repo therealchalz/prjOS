@@ -50,46 +50,46 @@
 #define TASKS_ID_INDEX_MASK				0x00000FFF
 
 typedef struct SystemCall {
-	int syscall;	//0 means hardware interrupted, anything else = syscall
-	int returnValue;
-	int param1;
-	int param2;
-	int param3;
-	int param4;
-	int param5;
-	int param6;
+	uint32_t syscall;	//0 means hardware interrupted, anything else = syscall
+	uint32_t returnValue;
+	uint32_t param1;
+	uint32_t param2;
+	uint32_t param3;
+	uint32_t param4;
+	uint32_t param5;
+	uint32_t param6;
 	//I'm drawing the line at 6...
 } SystemCall;
 
 typedef struct TaskDescriptor {
-	unsigned int taskId;
-	unsigned int parentId;
-	int* stackPointer;
+	uint32_t taskId;
+	uint32_t parentId;
+	uint32_t* stackPointer;
 	SystemCall systemCall;
-	unsigned int state;
-	unsigned int priority;
+	uint32_t state;
+	uint32_t priority;
 	struct TaskDescriptor* sendQueueNext;
 	struct TaskDescriptor* sendQueueHead;
 	struct TaskDescriptor* sendQueueTail;
 } TaskDescriptor;
 
 typedef struct TaskCreateParameters {
-	unsigned int parentId;		//OS-assigned task parent task Id
-	int* stackPointer;
-	int priority;
+	uint32_t parentId;		//OS-assigned task parent task Id
+	uint32_t* stackPointer;
+	uint32_t priority;
 	//Hardware-dependent parameters
 	TaskCpuCreateParameters cpuSpecific;
 } TaskCreateParameters;
 
-void initializeTds(TaskDescriptor* tds, int count, int* stackBase);
-void printTd(TaskDescriptor* td, int stackAmount);
+void initializeTds(TaskDescriptor* tds, uint32_t count, uint32_t* stackBase);
+void printTd(TaskDescriptor* td, uint32_t stackAmount);
 void printSystemCall(SystemCall* sc);
-TaskDescriptor* createTask(TaskDescriptor *tds, int count, const TaskCreateParameters *parms);
+TaskDescriptor* createTask(TaskDescriptor *tds, uint32_t count, const TaskCreateParameters *parms);
 void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry);
-int isTaskReady(TaskDescriptor* td);
+uint32_t isTaskReady(TaskDescriptor* td);
 void setTaskReady(TaskDescriptor* td);
 void taskExit(TaskDescriptor* td);
-int hasExited(TaskDescriptor* td);
-TaskDescriptor* findTd(int td, TaskDescriptor* tdList, int count);
+uint32_t hasExited(TaskDescriptor* td);
+TaskDescriptor* findTd(int td, TaskDescriptor* tdList, uint32_t count);
 
 #endif /* TASK_H_ */

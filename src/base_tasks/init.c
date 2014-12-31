@@ -15,6 +15,7 @@
 #include "string.h"
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/base_tasks/nameserver.h"
+#include "prjOS/include/base_tasks/serialUI.h"
 
 void initTask(void* firstTaskfn) {
 
@@ -26,15 +27,18 @@ void initTask(void* firstTaskfn) {
 	prjSend(tid, &dummy, 1, &dummy, 1);
 	bwprintf("Init: Nameserver running\n\r");
 
-	tid = prjCreate(0, task_serialDriver);
+	tid = prjCreate(0, serialDriverTask);
 	prjSend(tid, &dummy, 1, &dummy, 1);
-
 	bwprintf("Init: Serial driver running\n\r");
 
-	bwprintf("Init: Creating first task (%x)\n\r", firstTaskfn);
+	tid = prjCreate(0, serialUITask);
+	prjSend(tid, &dummy, 1, &dummy, 1);
+	bwprintf("Init: Serial UI running\n\r");
+
+	bwprintf("Init: Creating first task (0x%x)\n\r", firstTaskfn);
 	prjCreate(0, firstTaskfn);
 
-	prjChangePriority(7);
+	prjChangePriority(6);
 
 	while (1) {
 		prjYield();

@@ -17,9 +17,12 @@ uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid) {
 	uint32_t ret;
 	uint32_t message = MESSAGE_GET_CHAR;
 	uint32_t ch;
-	prjSend(serialTid,
+	ret = prjSend(serialTid,
 				(char*)(&message), sizeof(uint32_t),
-				(char*)(&charOut), sizeof(uint32_t));
+				(char*)(&ch), sizeof(uint32_t));
+	if (ret < 1)
+		return -1;
+	*charOut = ch;
 	return 1;
 }
 

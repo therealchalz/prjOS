@@ -25,11 +25,29 @@
 
 #include "prjOS/include/syscall.h"
 #include "prjOS/include/task.h"
+//TODO: make this file hardware-independent
+#include "inc/hw_ints.h"
+
+//extern kernelToTask(TaskDescriptor* t);
+
 
 int prjTaskSwitch(TaskDescriptor* t) {
-	int ret;
-	asm (svcArg(SYSCALL_TASKSWITCH));
-	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
-	return ret;
+	//Re-enable SVC call exception
+	IntPriorityMaskSet(1 << (8-NUM_PRIORITY_BITS));
+	IntMasterEnable();
+
+	//Switch
+	return sys_taskswitch(t);
 }
 
+__attribute__ ((naked ))
+int sys_taskswitch(TaskDescriptor* t) {
+	asm (svcArg(SYSCALL_TASKSWITCH));
+	asm ("		BX	lr\n");
+}
+
+/*
+int prjTaskSwitch(TaskDescriptor* t) {
+	kernelToTask(t);
+}
+*/

@@ -5,6 +5,9 @@
  *      Author: che
  */
 
+#ifndef _SERIAL_DRIVER_H_
+#define _SERIAL_DRIVER_H_
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "prjOS/include/syscall.h"
@@ -20,6 +23,8 @@
 #define MESSAGE_GET_CHAR_NONBLOCKING	0x2
 #define MESSAGE_SEND_MESSAGE			0x3
 #define MESSAGE_QUIT					0x4
+#define MESSAGE_CHARACTER_RECEIVED		0x5
+
 
 extern void serialDriverTask();
 
@@ -27,3 +32,5 @@ typedef struct {
 	bool keepRunning;
 	uint32_t blockedCharTid;
 } SerialDriverData;
+
+#endif //_SERIAL_DRIVER_H_

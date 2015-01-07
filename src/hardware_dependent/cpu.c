@@ -25,13 +25,6 @@
  */
 
 #include "prjOS/include/hardware_dependent/cpu.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/fpu.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/hardware_dependent/cpu_defs.h"
-#include "prjOS/include/task.h"
 
 void cpuPrintInfo() {
 	bwprintf("Processor: TM4C123\r\n");
@@ -47,6 +40,14 @@ void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startF
 	params->IAPSR = 0;
 	params->exceptionReturn = 0xFFFFFFFD;	//Return to Thread/PSP mode
 	params->startFunction = startFunction;
+}
+
+void cpuPreemptionTimerDisable() {
+	SysTickDisable();
+}
+void cpuPreemptionTimerEnable() {
+	HWREG(NVIC_ST_CURRENT)=0;	//resets systick counter
+	SysTickEnable();
 }
 
 uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *parms) {

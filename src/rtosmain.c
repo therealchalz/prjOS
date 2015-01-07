@@ -26,6 +26,7 @@
 #include "prjOS/include/hardware_dependent/cpu.h"
 #include "prjOS/include/hardware_dependent/cpu_defs.h"
 #include "prjOS/include/hardware_dependent/board.h"
+#include "prjOS/include/hardware_dependent/interrupts.h"
 #include "prjOS/include/debug.h"
 #include "prjOS/include/scheduler.h"
 #include "prjOS/include/syscall.h"
@@ -33,7 +34,28 @@
 #include "prjOS/include/kernel_data.h"
 #include "string.h"
 #include "prjOS/include/base_tasks/nameserver.h"
-#include "inc/hw_nvic.h"
+//#include "inc/hw_nvic.h"
+
+
+
+
+//#include "inc/hw_gpio.h"
+//#include "inc/hw_memmap.h"
+//#include "inc/hw_sysctl.h"
+//#include "inc/hw_types.h"
+//#include "inc/hw_nvic.h"
+//#include "inc/tm4c123gh6pm.h"
+//#include "driverlib/sysctl.h"
+//#include "driverlib/interrupt.h"
+//#include "driverlib/timer.h"
+//#include "driverlib/systick.h"
+//#include "driverlib/ssi.h"
+//#include "driverlib/adc.h"
+//#include "driverlib/uart.h"
+//#include "driverlib/fpu.h"
+//#include "driverlib/gpio.h"
+//#include "driverlib/pin_map.h"
+
 
 #ifdef DEBUG
 void __error__(char *filename, unsigned long line) {
@@ -68,13 +90,13 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	//TODO: if this TD has nothing to to, look for one that has waiting work
 	switch (t->state) {
 	case TASKS_STATE_SYSCALL_BLK:
-	case TASKS_STATE_HWINT:
+	case 8:	//TODO: this is only here temporarily
 		break;
 	default:
 		return;
 	}
 	switch (t->systemCall.syscall) {
-	case SYSCALL_HARDWARE_CALL:
+	case SYSCALL_HARDWARE_CALL:	//TODO: temporary
 		setTaskReady(t);
 		break;
 	case SYSCALL_GET_TID:
@@ -132,6 +154,17 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	}
 }
 
+void kernelTasks(TaskDescriptor* activeTask, KernelData* kernelData, uint32_t preemptionReason) {
+	if (preemptionReason == 0) {
+		//Syscall
+		handleSyscall(activeTask, kernelData);
+	} else {
+		//HW Interrupt, handled by kernel
+		handleInterrupt(preemptionReason);
+	}
+}
+
+
 int rtos_main(void* firstTaskFn) {
 
 	//cpuInit();
@@ -142,16 +175,16 @@ int rtos_main(void* firstTaskFn) {
 	int stackBase = 0;
 	int *stackBasePtr = &stackBase;
 
-	bwprintf("\n********Kernel Starting********\n\r\n");
-	bwprintf("Stack Base: %x",(stackBasePtr));
+	//bwprintf("\n********Kernel Starting********\n\r\n");
+	//bwprintf("Stack Base: %x",(stackBasePtr));
 	cpuPrintInfo();
 	printCEnvironmentSettings();
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
-	initializeTds(taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, STACK_BASE);
+	initializeTds(taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, (uint32_t*)STACK_BASE);
 
-	bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor));
+	//bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor));
 	//Scheduler stuff
 	SchedulerStructure schedStruct;
 	schedulerInit(&schedStruct, taskDescriptors);
@@ -162,7 +195,7 @@ int rtos_main(void* firstTaskFn) {
 	kernelData.tdCount = KERNEL_NUMBER_OF_TASK_DESCRIPTORS;
 	kernelData.schedulerStructure = &schedStruct;
 
-	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
+	//bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
 
 	//Create first tasks
 	createFirstTask(&kernelData, taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, firstTaskFn);
@@ -175,6 +208,14 @@ int rtos_main(void* firstTaskFn) {
 
 	TaskDescriptor* currentTask;
 
+	uint32_t preemptionReason = 0;
+
+	//Configure interrupts
+	IntMasterDisable();
+	initInterrupts();
+	IntEnable(INT_USB0);
+
+	char status = 1;
 	while(testLoop >= 0)
 	{
 		//testLoop--;
@@ -186,18 +227,19 @@ int rtos_main(void* firstTaskFn) {
 
 		if (currentTask != 0) {
 			//bwprintf("%d Kernel switching to task...(td @ %x)\r\n", loopCount, currentTask);
-			HWREG(NVIC_ST_CURRENT)=0;	//resets systick counter
-			SysTickEnable();
-			prjTaskSwitch(currentTask);
-			SysTickDisable();
-			//bwprintf("Kernel running...\r\n");
-			handleSyscall(currentTask, &kernelData);
+			cpuPreemptionTimerEnable();
+			preemptionReason = prjTaskSwitch(currentTask);
+			cpuPreemptionTimerDisable();
+			//bwprintf("Kernel running.  Prepemtion Reason: %d\r\n", preemptionReason);
+			kernelTasks(currentTask, &kernelData, preemptionReason);
 			if (!hasExited(currentTask)) {
 				schedulerAdd(&schedStruct, currentTask);
 			} else {
 				//bwprintf("Not adding task to scheduler - it has quit\n\r");
 			}
 		}
+		status ^= 1;
+		boardSetIndicatorLED(status);
 	}
 	bwprintf("System Halted\n\r");
 	//while(1) {}

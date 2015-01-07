@@ -10,6 +10,7 @@
 #include <stdbool.h>
 //#include "prjOS/include/bwio.h"
 #include "prjOS/include/hardware_dependent/cpu.h"
+#include "prjOS/include/hardware_dependent/interrupts.h"
 //#include "prjOS/include/hardware_dependent/cpu_defs.h"
 //#include "prjOS/include/hardware_dependent/board.h"
 //#include "prjOS/include/debug.h"
@@ -22,11 +23,23 @@
 //#include "inc/hw_nvic.h"
 extern void USB0DeviceIntHandler(void);
 
-void handleInterrupt(void) {
-	//pull the current ISR number from IPSR
-	uint32_t isr = cpuHelperGetIsr();
-	switch (isr) {
-	case 60:
+void handleInterrupt(uint32_t isrNumber) {
+
+	//isrNumber = cpuHelperGetIsr();
+
+	switch (isrNumber) {
+	case INTERRUPT_USB0:
 		USB0DeviceIntHandler();
 	}
+}
+
+
+void initInterrupts() {
+	//Lower ALL used interrupt sources to 1 or lower, but leave
+	//the SVC interrupt at 0.
+	IntPrioritySet(INTERRUPT_USB0, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(INTERRUPT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(INTERRUPT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
+
+	IntPrioritySet(INTERRUPT_SYSCALL, 0 << (8-NUM_PRIORITY_BITS));
 }

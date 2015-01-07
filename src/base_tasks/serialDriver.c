@@ -16,9 +16,12 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 	uint32_t messageType = *((uint32_t*)message);
 	message+=sizeof(uint32_t);
 
-	uint32_t ch;
+	uint32_t ch = 0;
 
 	switch (messageType) {
+	case MESSAGE_CHARACTER_RECEIVED:
+		prjReply(otherTask, (char*)&ch, 4);
+		break;
 	case MESSAGE_GET_CHAR:
 		ch = readCharNonblocking();
 		if (ch == -1) {
@@ -56,6 +59,23 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 	default:
 		prjReply(otherTask, message, size);
 		break;
+	}
+}
+
+
+void incomingCharacterPollingTask(void) {
+	uint32_t parentTid = prjGetParentTid();
+	uint32_t eventId;
+	char run = 1;
+
+	uint32_t message = MESSAGE_CHARACTER_RECEIVED;
+	uint32_t reply = 0;
+
+	while (run) {
+		//TODO:
+		//AwaitEvent
+
+		prjSend(parentTid, (char*)&message, 4, (char*)&reply, 4);
 	}
 }
 

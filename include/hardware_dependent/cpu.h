@@ -28,6 +28,16 @@
 #include <stdint.h>
 #include "prjOS/include/task.h"
 #include "prjOS/include/hardware_dependent/cpu_defs.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_nvic.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/fpu.h"
+#include "driverlib/systick.h"
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/hardware_dependent/cpu_defs.h"
+#include "prjOS/include/task.h"
 
 void cpuInit();
 void cpuPrintInfo();
@@ -35,6 +45,8 @@ void cpuBarf();
 
 uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *parms);
 void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startFunction);
+void cpuPreemptionTimerDisable();
+void cpuPreemptionTimerEnable();
 
 void contextSwitch(TaskDescriptor *t);
 void hwContextSwitch();

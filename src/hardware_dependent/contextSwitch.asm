@@ -20,6 +20,13 @@
 #-------------------------------------------------------------------------------
 /*
  * contextSwitch.asm
+ *
+ * For simplicity at this point, there are 3 functions defined in this file:
+ * hwContextSwitch - Called by ISRs to be handled by the kernel
+ * contextSwitch - Called by the SVC exception so tasks can switch to the kernel
+ * kernelToTask - Called by the kernel to switch to the given task, regardless if the
+ *  task was switched out by HW interrupt or by syscall.  In other words, kernelToTask
+ *  is the complementary function to both contextSwitch and hwContextSwitch.
  */
 
 
@@ -32,7 +39,7 @@
 hwContextSwitch:
 # Very similar to the contextSwitch below, but hacked a bit to allow
 # for hardware preemption.  Ideally in the future the different functions
-# would be merged but for now this is a quick and dirty solution.
+# would be merged but for now this is a quick solution.
 
 # This hwContextSwitch function should be called by a hardware preemption timer as an ISR.
 # The contextSwitch function further below should be called as an ISR to SVC calls or from
@@ -47,6 +54,14 @@ hwContextSwitch:
 
 		# Disable global interrupts
 		CPSID		i
+
+		LDR         R3, =0x1234abcd
+
+		# Disable all 1 and lower interrupts
+		MOV			R1, #0x20		/*binary 00100000, for NVIC with 3 bit priority*/
+		MSR			BASEPRI, R1
+		# Re-enable global interrupts
+		CPSIE		i
 
         LDR         R3, =0x43210001
 
@@ -78,35 +93,37 @@ hwContextSwitch:
 		MOV			R2, #0
 		STR			R2,	[R0, #12]
 
-        LDR         R3, =0x43210006
+		# Set status to 8-HW Interrupted
+		MOV                     R4, #8
+        STR                     R4, [R0, #44]
 
-		# Set the task state to be blocking on HW interrupt
-		MOV			R4, #8
-		STR			R4, [R0, #44]
-
-        LDR         R3, =0x43210007
-
-		# 0 out the rest of the syscall struct
-		# I guess this is not necessary so it has been removed
-		# STR			R2, [R0, #16]	/* retval */
-		# STR			R2, [R0, #20]	/* R0 */
-		# STR			R2, [R0, #24]	/* R1 */
-		# STR			R2, [R0, #28]	/* R2 */
-		# STR			R2, [R0, #32]	/* R3 */
-		# STR			R2, [R0, #36]	/* R4 */
-		# STR			R2, [R0, #40]	/* R5 */
-
-		# The TaskSwitch syscall always returns 0
-		MOV			R0, #0
-
-        LDR         R3, =0x43210008
+       	LDR         R3, =0x43210006
 
 		# Pop some of the kernel's registers (rest handled by exception return)
 		POP			{R4-R11,LR}
 
-        LDR         R3, =0x43210009
+		LDR         R3, =0x43210007
 
-		B			popTheRest
+		# The TaskSwitch call returns the ISR number that triggered the task switch
+		# NB: This mustn't return 0, otherwise the kernel will think that the task
+		# made a syscall.
+		POP			{R0}
+		MRS			R0, IPSR
+
+		LDR         R3, =0x43210008
+
+		# If IPSR is 0, return -1 instead of IPSR
+		MOV			R2, #0
+		CMP			R0, R2
+		IT			EQ
+		MOVEQ		R0, #-1
+
+		PUSH {R0}
+
+		LDR         R3, =0x43210009
+
+		# Done restoring kernel context - pops the remainder
+		BX			LR
 
 
 	.thumb
@@ -114,7 +131,6 @@ hwContextSwitch:
 	.section .text.contextSwitch
 	.thumb_func
 	.global	contextSwitch
-
 
 contextSwitch:
 #* --------------------------------------------------------------------------*
@@ -131,8 +147,6 @@ contextSwitch:
 		# Disable global interrupts
 		CPSID		i
 
-        LDR         R3, =0x12340001
-
 		# Check if we're swapping from the kernel to a task or vice versa.
 		# If were going kernel to task, we don't need to save our SP (because we always use MSP)
 		# If were going task to kernel, we'll update the TD with the new SP
@@ -140,86 +154,18 @@ contextSwitch:
 		MOV			R1, LR
 		AND			R1, R1, #0x0F
 		MOV			R2, #0x09 /* Check if the exception LR indicates we came from the kernel */
-		CMP			R1, R2	/* On equal, we're going from kernel to task */
-		BNE			taskToKernel
-
-
-# Kernel to Task:
-
-        LDR         R3, =0x12340020
-
-		# Store kernel registers on MSP
-		PUSH 		{R4-R11,LR}
-
-        LDR         R3, =0x12340021
-
-        # Keep Task Descriptor pointer in R0
-		LDR			R0, [SP, #36]
-
-        LDR         R3, =0x12340022
-
-		# Get SP of task and keep in R1
-		LDR			R1, [R0, #8]	/* Task SP from TD */
-
-        # Save the kernel SP in R2
-        MOV			R2, SP
-
-		# Switch to the task's stack
-        # In handler mode we can't switch to PSP, so switch MSP to task's PSP
-        MOV			SP, R1
-
-        # Check if task was preempted or did a syscall
-		LDR			R4, [R0, #44]	/* Task state: 8 = hwinterrupted, anything else is irrelevant for us here */
-		MOV			R5, #8
-		CMP			R4, R5
-
-        # Pop some of the task's registers
-		POP			{R4-R11,LR}
-
-        #At this point, R0=Task descriptor pointer, R1=Task SP, R2 = Kernel SP
-		BNE			syscall_kernel_to_task
-
-hw_kernel_to_task:
-
-        # Nothing to do
-
-		B finish_kernel_to_task;
-
-syscall_kernel_to_task:
-
-        #At this point, R0=Task descriptor pointer, R1=Task SP, R2 = Kernel SP, R4-R11&LR are restored from process
-        #Replace the task's stack-stored R0 with the proper syscall return value
-
-		LDR			R3, [R0, #16]	/* Task syscall return value from TD */
-
-		# Here we pop R0 temporarily, then push on the return value
-		POP			{R1}
-		PUSH		{R3}
-
-        LDR         R3, =0x12340044
-
-        #At this point, R0=Task descriptor pointer, R1=Task SP, R2 = Kernel SP, 
-
-		B finish_kernel_to_task;
-
-finish_kernel_to_task:
-
-        LDR         R3, =0x12340050
-
-		# Save PSP
-		MOV			R1, SP
-        MSR			PSP, R1			/* Set PSP to task SP */
-
-        LDR         R3, =0x12340051
-
-        # Restore MSP
-        MOV			SP, R2
-
-        LDR         R3, =0x12340052
-
-        B			popTheRest
+		CMP			R1, R2  /* On equal, we're going from kernel to task */
+		BEQ			kernelToTask
 
 taskToKernel:
+
+		LDR         R3, =0x1234ab00
+
+		# Disable all 1 and lower interrupts
+		MOV			R1, #0x20		/*binary 00100000, for NVIC with 3 bit priority*/
+		MSR			BASEPRI, R1
+		# Re-enable global interrupts
+		CPSIE		i
 
         LDR         R3, =0x12340060
 
@@ -251,14 +197,14 @@ taskToKernel:
 
         LDR         R3, =0x12340064
 
-		# Get the SVC call argument.
+		# Get the SVC call argument using the pre-exception PC of the task
 		LDR			R2, [R1, #60]
 		LDR			R2, [R2, #-2]
 		AND			R2, R2, #255
 
         LDR         R3, =0x12340065
 
-		# Save the syscall arg, clear the ret value
+		# Save the syscall arg to the TD, clear the ret value
 		STR			R2,	[R0, #12]
 		MOV			R2, #0
 		STR			R2, [R0, #16]
@@ -295,20 +241,112 @@ taskToKernel:
 
         LDR         R3, =0x12340068
 
-		# The TaskSwitch syscall always returns 0
-		MOV			R2, #0
-
-		# Pop some of the kernel's registers (rest handled by exception return)
+		# Start popping some of the kernel's registers (rest handled by exception return)
         POP			{R4-R11,LR}
 
-        LDR         R3, =0x12340069
+        # The TaskSwitch syscall always returns 0 when the task was interrupted
+        # due to a syscall
+        POP			{R0}
+		MOV			R0, #0
+		PUSH		{R0}
 
-popTheRest:
+		LDR         R3, =0x12340069
 
-        LDR         R3, =0x12340070
+		#CPSIE		i
+		# Done restoring kernel context - pops the remainder
+		BX			LR
 
-		# Enable global interrupts
+
+	.thumb
+	.syntax unified
+	.section .text.kernelToTask
+	.thumb_func
+	.global	kernelToTask
+
+# R0 = TD location (using R0 pushed on stack by exception mechanism)
+kernelToTask:
+
+		LDR         R3, =0x12340020
+
+		# Recall, the stack will look like:
+		# R4,R5,R6,R7,R8,R9,R10,R11,LR(EXC_RETURN),R0,R1,R2,R3,R12,LR(Pre exception),PC(Pre exception),xPSR(Pre exception)
+
+		# Store the remaining kernel registers on MSP
+		PUSH 		{R4-R11,LR}
+
+        LDR         R3, =0x12340021
+
+        # Keep Task Descriptor pointer in R0
+        LDR			R0, [SP, #36]
+
+		# Get SP of task and keep in R1
+		LDR			R1, [R0, #8]	/* Task SP from TD */
+
+        # Save the kernel SP in R2
+        MOV			R2, SP
+
+        LDR         R3, =0x12340022
+
+		# Switch to the task's stack
+        # In handler mode we can't switch to PSP, so switch MSP to task's PSP
+        MOV			SP, R1
+
+        # Check if task was preempted or did a syscall
+		LDR			R4, [R0, #44]	/* Task state: 8 = hwinterrupted, anything else is irrelevant for us here */
+		MOV			R5, #8
+		CMP			R4, R5
+
+		LDR         R3, =0x12340023
+
+        # Pop some of the task's registers
+		POP			{R4-R11,LR}
+
+		LDR         R3, =0x12340024
+
+        #At this point, R0=Task descriptor pointer, R1=Task SP, R2 = Kernel SP
+		BNE			syscall_kernel_to_task
+
+hw_kernel_to_task:
+
+        # Nothing to do
+
+		B finish_kernel_to_task;
+
+syscall_kernel_to_task:
+
+        #At this point, R0=Task descriptor pointer, R1=Task SP, R2 = Kernel SP, R4-R11&LR are restored from process
+
+        #Replace the task's stack-stored R0 with the proper syscall return value
+		# Here we pop 'R0' from the stack temporarily, then push on the return value
+		POP			{R1}
+		LDR			R1, [R0, #16]	/* Task syscall return value from TD */
+		PUSH		{R1}
+
+        #LDR         R3, =0x12340044
+
+		B finish_kernel_to_task;
+
+finish_kernel_to_task:
+
+        LDR         R3, =0x12340025
+
+		# Save PSP
+		MOV			R1, SP
+        MSR			PSP, R1			/* Set PSP to task SP */
+
+        LDR         R3, =0x12340026
+
+        # Restore MSP
+        MOV			SP, R2
+
+        LDR         R3, =0x12340027
+
+        # Re-enable priority 1 and lower interrupts
+        MOV			R2, #0
+        MSR			BASEPRI, R2
+
+		# Re-enable global interrupts
 		CPSIE		i
 
-        BX			LR	/* Exception return, pops the rest of the stack */
+		BX			LR	/* Exception return, pops the rest of the stack */
 

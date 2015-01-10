@@ -42,23 +42,23 @@
 MEMORY
 {
     FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000
-    RAM (rwx) : ORIGIN = 0x20007B00, LENGTH = 0x00000500
-    STACK (rwx) : ORIGIN = 0x20007B00, LENGTH = 0x00000000
+    RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00008000
+    STACK (rwx) : ORIGIN = 0x20007FFF, LENGTH = 0x00000000
 }
 
 /*
 * Sections definitions:
 *
-* .text 		- machine instructions.
-* .stack		- just contains the pointer to the stack end at the right place.
-* .data 		- initialized data defined in the program.
-* .bss  		- un-initialized global and static variables (to be initialized to 0 before starting main).
+* .text         machine instructions.
+* .data         initialized data defined in the program.
+* .bss          un-initialized global and static variables (to be initialized to 0 before starting main).
+* .stack        just contains the pointer to the stack end at the right place.
 */
 SECTIONS
-{	
-	/* This section it's the code, containing the NVIC Vector table that must start at 0x0
-	*   Look at the LM4F120H5QR datasheet for details. (Table 2-8. Exception Types)
-	*/
+    {
+    /* This section it's the code, containing the NVIC Vector table that must start at 0x0
+    *   Look at the LM4F120H5QR datasheet for details. (Table 2-8. Exception Types)
+    */
     .text : 
     {
     	/* _start_text = .;	/* This is an index to the beginning of .text segment. */
@@ -68,13 +68,6 @@ SECTIONS
         _end_text = .;		/* This is an index to the end of .text segment. */
     }>FLASH
 
-	/*
-	* .stack contains nothing, but I use it to set the first vector item (SP R13).
-	*/
-	.stack : 
-	{
-		_stack_top = .; /* An index to the end of the stack */
-	}>STACK
     
     /* 
     * .data segment must be placed in RAM but it's originally stored in FLASH
@@ -92,10 +85,10 @@ SECTIONS
     }>RAM AT >FLASH
     
 
-	/* 
-	* .bss contains the unitialized variables and must be set as 0x0 during runtime.
-	* It should be loaded in RAM and particula care should be taken initializing them in the startup file. 
-	*/
+    /* 
+    * .bss contains the unitialized variables and must be set as 0x0 during runtime.
+    * It should be loaded in RAM and particula care should be taken initializing them in the startup file. 
+*/
     .bss : 
     {
     	_start_bss = .;		/* This is an index to the beginning of .bss segment. */
@@ -104,5 +97,11 @@ SECTIONS
         _end_bss = .;		/* End index for .bss segment */
     }>RAM
     
-	
+    /*
+    * .stack contains nothing, but I use it to set the first vector item (SP R13).
+    */
+    .stack : 
+    {
+        _stack_top = .; /* An index to the end of the stack */
+    }>STACK
 }

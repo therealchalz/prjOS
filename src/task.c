@@ -41,28 +41,33 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 
 void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 
-	if (stackBase == 0) {
-		stackBase = (uint32_t*)STACK_BASE;
-	}
-
 	uint32_t oldId = td->taskId;
 	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
+	uint32_t stackPointer = td->stackPointer;
+	uint32_t taskType = td->taskType;
 
 	memset(td, 0, sizeof(TaskDescriptor));
 
-	uint32_t stackOffset;
+	if (stackBase != 0) {
+		uint32_t stackOffset;
+		if (idx >= 0 && idx < KERNEL_NUMBER_OF_TASKS) {
+			taskType = TASK_TYPE_REGULAR;
+			stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
+		} else if (idx >= KERNEL_NUMBER_OF_TASKS && idx < KERNEL_NUMBER_OF_MICROTASKS) {
+			taskType = TASK_TYPE_MICRO;
+			stackOffset = KERNEL_STACK_SIZE +
+					(KERNEL_NUMBER_OF_TASKS * KERNEL_TASK_DEFAULT_STACK_SIZE) +
+					((idx-KERNEL_NUMBER_OF_TASKS) * KERNEL_MICROTASK_DEFAULT_STACK_SIZE);
+		}
+		stackPointer = ((uint32_t)stackBase - stackOffset);
 
-	if (idx >= 0 && idx < KERNEL_NUMBER_OF_TASKS) {
-		td->taskType = TASK_TYPE_REGULAR;
-		stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
-	} else if (idx >= KERNEL_NUMBER_OF_TASKS && idx < KERNEL_NUMBER_OF_MICROTASKS) {
-		td->taskType = TASK_TYPE_MICRO;
-		stackOffset = KERNEL_STACK_SIZE +
-				(KERNEL_NUMBER_OF_TASKS * KERNEL_TASK_DEFAULT_STACK_SIZE) +
-				((idx-KERNEL_NUMBER_OF_TASKS) * KERNEL_MICROTASK_DEFAULT_STACK_SIZE);
+		//Align to 32-bit boundary if required
+		if (stackPointer != stackPointer & ~0x3) {
+			stackPointer = stackPointer & ~0x3;
+		}
 	}
-	uint32_t stackPointer = ((uint32_t)stackBase - stackOffset);
 
+	td->taskType = taskType;
 	td->taskId = oldId;
 	td->stackPointer = (uint32_t*)stackPointer;
 	td->state = TASKS_STATE_INVALID;

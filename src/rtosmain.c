@@ -34,6 +34,9 @@
 #include "prjOS/include/kernel_data.h"
 #include "string.h"
 #include "prjOS/include/base_tasks/nameserver.h"
+
+extern unsigned long _stack_top;
+
 //#include "inc/hw_nvic.h"
 
 
@@ -172,8 +175,9 @@ int rtos_main(void* firstTaskFn) {
 	//boardInit();
 
 	//UARTInit(115200);
-	int stackBase = 0;
-	int *stackBasePtr = &stackBase;
+	//int stackBase = 0;
+	//int *stackBasePtr = &stackBase;
+	uint32_t* stack_top = &_stack_top;
 
 	//bwprintf("\n********Kernel Starting********\n\r\n");
 	//bwprintf("Stack Base: %x",(stackBasePtr));
@@ -182,7 +186,7 @@ int rtos_main(void* firstTaskFn) {
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
-	initializeTds(taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, (uint32_t*)STACK_BASE);
+	initializeTds(taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, stack_top);
 
 	//bwprintf("Tasks are taking %d bytes on the kernel stack\n\r", (KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor));
 	//Scheduler stuff

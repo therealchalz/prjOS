@@ -54,6 +54,12 @@ uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *par
 	//Need to set up stack like this:
 	//R4,R5,R6,R7,R8,R9,R10,R11,LR(EXC_RETURN),R0,R1,R2,R3,R12,LR(Pre exception),PC(Pre exception),xPSR(Pre exception)
 	uint32_t* newStack = stackLocation;
+
+	//Align stack to 32-bit boundary, using full descending stack so if we need to move it, move it down
+	if ((uint32_t)newStack != ((uint32_t)newStack &~0x3)) {
+		newStack = (uint32_t*)((uint32_t)newStack & ~0x3);
+	}
+
 	//push on 6 dummy things - the context switch expects the compiler
 	//to push the syscall parameters onto the stack.  If we don't make
 	//dummy space here, if we were to call a syscall as soon as our task starts

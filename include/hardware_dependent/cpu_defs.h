@@ -31,13 +31,13 @@
 #define macroToString(x) changeArgToString(x)
 #define svcArg(a) "		SVC #"macroToString(a)"\n"
 
-#define STACK_BASE							(0x20000000+0x8000)
+//#define STACK_BASE							(0x20000000+0x8000)
 #define KERNEL_STACK_SIZE					0x1400
-#define KERNEL_NUMBER_OF_TASKS				15
-#define KERNEL_NUMBER_OF_MICROTASKS			30
+#define KERNEL_NUMBER_OF_TASKS				16
+#define KERNEL_NUMBER_OF_MICROTASKS			23
 #define KERNEL_NUMBER_OF_TASK_DESCRIPTORS	(KERNEL_NUMBER_OF_TASKS+KERNEL_NUMBER_OF_MICROTASKS)
 #define KERNEL_TASK_DEFAULT_STACK_SIZE		0x500
-#define KERNEL_MICROTASK_DEFAULT_STACK_SIZE	0xA0
+#define KERNEL_MICROTASK_DEFAULT_STACK_SIZE	0x100
 
 typedef struct TaskCpuCreateParameters {
 	int regs[13];			//R0-R12

@@ -28,7 +28,7 @@
 
 void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds) {
 	memset(schedStruct, 0, sizeof(SchedulerStructure));
-	int i;
+	uint16_t i;
 	for (i = 0; i < KERNEL_NUMBER_OF_TASK_DESCRIPTORS; i++) {
 		schedStruct->allTasks[i].td = &tds[i];
 		schedStruct->allTasks[i].next = 0;
@@ -38,7 +38,7 @@ void schedulerInit(SchedulerStructure *schedStruct, TaskDescriptor *tds) {
 SchedulerTask* getSchedulerTask(SchedulerStructure* schedStruct, TaskDescriptor* td) {
 	//TODO: this is sloppy, speed it up
 	SchedulerTask* ret = 0;
-	int i;
+	uint16_t i;
 	for (i = 0; i < KERNEL_NUMBER_OF_TASK_DESCRIPTORS; i++) {
 		if (schedStruct->allTasks[i].td == td) {
 			ret = &(schedStruct->allTasks[i]);
@@ -60,7 +60,7 @@ void schedulerAdd(SchedulerStructure* schedStruct, TaskDescriptor* td) {
 		return;
 	}
 	//Not checking priority - it should be enforced further up
-	int pri = td->priority;
+	uint8_t pri = td->priority;
 	SchedulerTask* schedTask = getSchedulerTask(schedStruct, td);
 	schedTask->next = 0;
 	if (schedStruct->queueTails[pri] == 0) {
@@ -72,9 +72,9 @@ void schedulerAdd(SchedulerStructure* schedStruct, TaskDescriptor* td) {
 	}
 }
 void schedulerPrintTasks(SchedulerStructure* schedStruct) {
-	int i;
+	uint8_t i;
 	for (i=0; i < TASKS_MAX_PRIORITY; i++) {
-		int count =0;
+		uint16_t count =0;
 		SchedulerTask* current;
 		current = schedStruct->queueHeads[i];
 		while (current) {
@@ -87,7 +87,7 @@ void schedulerPrintTasks(SchedulerStructure* schedStruct) {
 //Returns 0 if no tasks are ready.  best to leave an idle task going...
 TaskDescriptor* schedule(SchedulerStructure* schedStruct) {
 	TaskDescriptor* ret = 0;
-	int i;
+	uint8_t i;
 	for (i=0; i < TASKS_MAX_PRIORITY && ret == 0; i++) {
 		SchedulerTask* current = schedStruct->queueHeads[i];
 		SchedulerTask* last = 0;

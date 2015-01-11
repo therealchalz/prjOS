@@ -6,7 +6,7 @@
  */
 #include <prjOS/include/base_tasks/serialDriver.h>
 
-static void processMessage(SerialDriverData* data, uint32_t otherTask, char* message, uint32_t size) {
+static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* message, uint32_t size) {
 	if (size < 4) {
 		prjReply(otherTask, message, size);
 		return;
@@ -20,19 +20,19 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 
 	switch (messageType) {
 	case MESSAGE_CHARACTER_RECEIVED:
-		prjReply(otherTask, (char*)&ch, 4);
+		prjReply(otherTask, (uint8_t*)&ch, 4);
 		break;
 	case MESSAGE_GET_CHAR:
 		ch = readCharNonblocking();
 		if (ch == -1) {
 			data->blockedCharTid = otherTask;
 		} else {
-			prjReply(otherTask, (char*)&ch, 4);
+			prjReply(otherTask, (uint8_t*)&ch, 4);
 		}
 		break;
 	case MESSAGE_GET_CHAR_NONBLOCKING:
 		ch = readCharNonblocking();
-		prjReply(otherTask, (char*)&ch, 4);
+		prjReply(otherTask, (uint8_t*)&ch, 4);
 		break;
 	case MESSAGE_SEND_MESSAGE:
 		//[type(4)][len(2)][msg(len bytes)]
@@ -43,14 +43,14 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 		if (msgLen > MAX_MESSAGE_LEN)
 			msgLen = MAX_MESSAGE_LEN;
 
-		char* msg = message;
+		uint8_t* msg = message;
 		uint16_t bytesSent = msgLen;
 		while (msgLen--) {
 			bwputc(*msg);
 			msg++;
 		}
 
-		prjReply(otherTask, (char*)&bytesSent, 2);
+		prjReply(otherTask, (uint8_t*)&bytesSent, 2);
 
 		break;
 	case MESSAGE_QUIT:
@@ -74,7 +74,7 @@ void incomingCharacterPollingTask(void) {
 	while (run) {
 		prjAwaitEvent(eventId);
 
-		prjSend(parentTid, (char*)&message, 4, (char*)&reply, 4);
+		prjSend(parentTid, (uint8_t*)&message, 4, (uint8_t*)&reply, 4);
 	}
 }
 
@@ -84,9 +84,9 @@ void incomingCharacterPollingTask(void) {
 void serialDriverTask() {
 	SerialDriverData data;
 
-	int otherTask;
-	char message[MAX_MESSAGE_LEN];
-	int msgLen;
+	uint32_t otherTask;
+	uint8_t message[MAX_MESSAGE_LEN];
+	uint32_t msgLen;
 
 	data.keepRunning = true;
 	data.blockedCharTid = 0;
@@ -106,7 +106,7 @@ void serialDriverTask() {
 		if (data.blockedCharTid) {
 			uint32_t ch = readCharNonblocking();
 			if (ch != -1) {
-				uint32_t ret = prjReply(data.blockedCharTid, (char*)&ch, 4);
+				uint32_t ret = prjReply(data.blockedCharTid, (uint8_t*)&ch, 4);
 				data.blockedCharTid = 0;
 				if (ret < 0) {
 					bwprintf("Serial Driver: Bad reply return value: %d\n\r", ret);

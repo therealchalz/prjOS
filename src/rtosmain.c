@@ -35,46 +35,11 @@
 #include "string.h"
 #include "prjOS/include/base_tasks/nameserver.h"
 
-extern unsigned long _stack_top;
-
-//#include "inc/hw_nvic.h"
-
-
-
-
-//#include "inc/hw_gpio.h"
-//#include "inc/hw_memmap.h"
-//#include "inc/hw_sysctl.h"
-//#include "inc/hw_types.h"
-//#include "inc/hw_nvic.h"
-//#include "inc/tm4c123gh6pm.h"
-//#include "driverlib/sysctl.h"
-//#include "driverlib/interrupt.h"
-//#include "driverlib/timer.h"
-//#include "driverlib/systick.h"
-//#include "driverlib/ssi.h"
-//#include "driverlib/adc.h"
-//#include "driverlib/uart.h"
-//#include "driverlib/fpu.h"
-//#include "driverlib/gpio.h"
-//#include "driverlib/pin_map.h"
-
-
-#ifdef DEBUG
-void __error__(char *filename, unsigned long line) {
-	cpuBarf();
-	bwprintf("Driver Crash: file: %s, line: %u", filename, line);
-	//Keep this at the end because it may cause a hard fault
-	printCurrentStackTop(16);
-	while(1) {}
-}
-#endif
+extern uint32_t _stack_top;
 
 extern void initTask(void* firstTaskfn);
 
-
-
-void createFirstTask(KernelData* kernelData, TaskDescriptor *tds, int count, void* firstTaskFn) {
+static void createFirstTask(KernelData* kernelData, TaskDescriptor *tds, int count, void* firstTaskFn) {
 	TaskCreateParameters params;
 	setupDefaultCreateParameters(&params, initTask);
 	params.parentId = 0;
@@ -82,11 +47,6 @@ void createFirstTask(KernelData* kernelData, TaskDescriptor *tds, int count, voi
 	TaskDescriptor* td = createTask(tds, count, &params);
 	td->systemCall.returnValue = (uint32_t)firstTaskFn;
 	schedulerAdd(kernelData->schedulerStructure, td);
-}
-
-void TaskSwitch(TaskDescriptor* t) {
-	asm (" MOV R0, %[td]": :[td] "r" (t));
-	asm (svcArg(0));
 }
 
 void handleSyscall(KernelData* kernelData, TaskDescriptor* t) {
@@ -97,9 +57,6 @@ void handleSyscall(KernelData* kernelData, TaskDescriptor* t) {
 		return;
 	}
 	switch (t->systemCall.syscall) {
-	case SYSCALL_HARDWARE_CALL:	//TODO: temporary
-		setTaskReady(t);
-		break;
 	case SYSCALL_GET_TID:
 		t->systemCall.returnValue = sys_getTid(t);
 		break;
@@ -194,8 +151,7 @@ int rtos_main(void* firstTaskFn) {
 	//boardInit();
 
 	//UARTInit(115200);
-	//int stackBase = 0;
-	//int *stackBasePtr = &stackBase;
+
 	uint32_t* stack_top = &_stack_top;
 
 	//bwprintf("\n********Kernel Starting********\n\r\n");
@@ -227,9 +183,6 @@ int rtos_main(void* firstTaskFn) {
 	//Create first tasks
 	createFirstTask(&kernelData, taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, firstTaskFn);
 
-	int testLoop = 100000;
-	int loopCount = 0;
-
 	//TODO:
 	//return 0;
 
@@ -238,15 +191,10 @@ int rtos_main(void* firstTaskFn) {
 	uint32_t preemptionReason = 0;
 
 	//Configure interrupts
-	IntMasterDisable();
 	initInterrupts();
-	IntEnable(INT_USB0);
 
-	char status = 1;
-	while(testLoop >= 0)
+	while(1)
 	{
-		//testLoop--;
-		loopCount++;
 		//bwprintf("Getting task to schedule...\n\r");
 		//schedulerPrintTasks(&schedStruct);
 		currentTask = schedule(&schedStruct);
@@ -265,12 +213,8 @@ int rtos_main(void* firstTaskFn) {
 				//bwprintf("Not adding task to scheduler - it has quit\n\r");
 			}
 		}
-		status ^= 1;
-		boardSetIndicatorLED(status);
 	}
 	bwprintf("System Halted\n\r");
-	//while(1) {}
-
-	return 0x420;
+	return 0;
 }
 

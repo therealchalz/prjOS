@@ -29,7 +29,7 @@
 #include "prjOS/include/bwio.h"
 
 void nameserverEntry() {
-	int nameserverTid = prjGetTid();
+	uint32_t nameserverTid = prjGetTid();
 	bwprintf("NAMESERVER: INFO: Nameserver started: %d.\n\r", nameserverTid);
 	char run = 1;
 
@@ -39,7 +39,7 @@ void nameserverEntry() {
 	memset(nameEntries, 0, NAMESERVER_MAX_NAMES * sizeof(NameserverEntry));
 
 	//Read in query
-	int sender;
+	uint32_t sender;
 	NameserverQuery query;
 
 	prjRegisterNameserver(nameserverTid);
@@ -48,14 +48,14 @@ void nameserverEntry() {
 
 		//bwprintf("NAMESERVER: DEBUG: Waiting for message.\n\r");
 
-		int receiveRet = prjReceive(&sender, (char*)&query, sizeof(query));
+		uint32_t receiveRet = prjReceive(&sender, (uint8_t*)&query, sizeof(query));
 		if (receiveRet < 0) {
 			bwprintf("NAMESERVER: ERR: Receive returned %d.\n\r", receiveRet);
 		}
 
 		if (receiveRet != sizeof(query)) {
 			//echo invalid messages - useful for debugging and seeing if the server is booted yet.
-			prjReply(sender, (char*)&query, receiveRet);
+			prjReply(sender, (uint8_t*)&query, receiveRet);
 			continue;
 		}
 
@@ -65,10 +65,10 @@ void nameserverEntry() {
 		}
 		//bwprintf("NAMESERVER: DEBUG: Received request from: %d.  Opcode: %d.\n\r", sender, query.operation);
 		//bwprintf("NAMESERVER: DEBUG: Got string: %s\n\r", query.buffer);
-		int i;
+		uint32_t i;
 
-		int replyOperation;
-		int returnValue;
+		uint32_t replyOperation;
+		uint32_t returnValue;
 
 		switch (query.operation) {
 		case NAMESERVER_OPERATION_REGISTER:
@@ -135,11 +135,11 @@ void nameserverEntry() {
 		//Build reply
 		NameserverQuery reply;
 		reply.senderTid = nameserverTid;
-		*((int*)reply.buffer) = returnValue;
+		*((uint32_t*)reply.buffer) = returnValue;
 		reply.bufferLen = sizeof(returnValue);
 		reply.operation = replyOperation;
 		//bwprintf("NAMESERVER: DEBUG: Replying to sender: %d.\n\r", sender);
-		int replyRet = prjReply(sender, (char*)&reply, sizeof(reply));
+		int replyRet = prjReply(sender, (uint8_t*)&reply, sizeof(reply));
 		if (replyRet != 0) {
 			bwprintf("NAMESERVER: ERR: Reply returned %d.\n\r", replyRet);
 		}

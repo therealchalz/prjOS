@@ -20,7 +20,7 @@
 void initTask(void* firstTaskfn) {
 
 	uint32_t tid;
-	char dummy = 0;
+	uint8_t dummy = 0;
 
 	bwprintf("Init starting\n\r");
 	tid = prjCreate(0, nameserverEntry);

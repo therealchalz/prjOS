@@ -34,6 +34,8 @@ void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
 
 
 void initInterrupts() {
+	IntMasterDisable();
+
 	//Lower ALL used interrupt sources to 1 or lower, but leave
 	//the SVC interrupt at 0.
 	IntPrioritySet(INTERRUPT_USB0, 1 << (8-NUM_PRIORITY_BITS));
@@ -41,4 +43,6 @@ void initInterrupts() {
 	IntPrioritySet(INTERRUPT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
 
 	IntPrioritySet(INTERRUPT_SYSCALL, 0 << (8-NUM_PRIORITY_BITS));
+
+	//IntEnable(INT_USB0);
 }

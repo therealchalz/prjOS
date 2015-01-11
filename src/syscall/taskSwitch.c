@@ -37,7 +37,7 @@ uint32_t sys_taskswitch(TaskDescriptor* t) {
 }
 
 uint32_t prjTaskSwitch(TaskDescriptor* t) {
-	//Re-enable SVC call exception
+	//Re-enable SVC call exception, but block all others
 	IntPriorityMaskSet(1 << (8-NUM_PRIORITY_BITS));
 	IntMasterEnable();
 

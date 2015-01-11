@@ -49,12 +49,7 @@ void empty_def_handler(void);
 // this is the code for an hard fault.
 void hardfault_handler(void);
 
-extern void sysTickHandler(void);
-//extern void USBUARTIntHandler(void);
-extern void USB0DeviceIntHandler(void);
 extern void timer0Handler(void);
-extern void handleInterrupt(uint32_t);
-extern void kernelToTask(void);
 
 
 //-----------------------------------------------------------------------------

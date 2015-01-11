@@ -50,8 +50,8 @@ void serialUITask(void) {
 
 	uint32_t tid;
 	uint32_t ch = 0;
-	prjReceive((int*)&tid, (char*)&ch, 1);
-	prjReply(tid, (char*)&ch, 1);
+	prjReceive((uint32_t*)&tid, (uint8_t*)&ch, 1);
+	prjReply(tid, (uint8_t*)&ch, 1);
 
 	char run = 1;
 

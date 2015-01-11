@@ -30,20 +30,19 @@
 
 //extern kernelToTask(TaskDescriptor* t);
 
+__attribute__ ((naked ))
+uint32_t sys_taskswitch(TaskDescriptor* t) {
+	asm (svcArg(SYSCALL_TASKSWITCH));
+	asm ("		BX	lr\n");
+}
 
-int prjTaskSwitch(TaskDescriptor* t) {
+uint32_t prjTaskSwitch(TaskDescriptor* t) {
 	//Re-enable SVC call exception
 	IntPriorityMaskSet(1 << (8-NUM_PRIORITY_BITS));
 	IntMasterEnable();
 
 	//Switch
 	return sys_taskswitch(t);
-}
-
-__attribute__ ((naked ))
-int sys_taskswitch(TaskDescriptor* t) {
-	asm (svcArg(SYSCALL_TASKSWITCH));
-	asm ("		BX	lr\n");
 }
 
 /*

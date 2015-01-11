@@ -5,7 +5,7 @@
 uint32_t prjAwaitEvent( uint32_t eventid) {
 	asm volatile(svcArg(SYSCALL_AWAIT_EVENT));
 	uint32_t ret;
-	asm volatile ("mov %[ret], r0": [ret] "+r" (ret));
+	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 

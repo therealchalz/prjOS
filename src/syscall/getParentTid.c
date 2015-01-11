@@ -26,14 +26,14 @@
 #include "prjOS/include/syscall.h"
 #include "prjOS/include/task.h"
 
-int prjGetParentTid() {
-	int ret;
+uint32_t prjGetParentTid() {
 	asm (svcArg(SYSCALL_GET_PARENT_TID));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_getParentTid(TaskDescriptor* active){
+uint32_t sys_getParentTid(TaskDescriptor* active){
 	setTaskReady(active);
 	return active->parentId;
 }

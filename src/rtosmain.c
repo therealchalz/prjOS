@@ -149,7 +149,7 @@ void handleSyscall(KernelData* kernelData, TaskDescriptor* t) {
 	case SYSCALL_CREATE_MICROTASK:
 		{
 			TaskCreateParameters params;
-			int r = sys_create_microtask(t, &params);
+			int r = sys_createMicroTask(t, &params);
 			if (r) { //error
 				t->systemCall.returnValue = r;
 				break;

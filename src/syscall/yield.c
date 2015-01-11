@@ -25,14 +25,14 @@
 #include "prjOS/include/syscall.h"
 #include "prjOS/include/task.h"
 
-int prjYield() {
-	int ret;
+uint32_t prjYield() {
 	asm (svcArg(SYSCALL_YIELD));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_yield(TaskDescriptor* active){
+uint32_t sys_yield(TaskDescriptor* active){
 	setTaskReady(active);
 	return 0;
 }

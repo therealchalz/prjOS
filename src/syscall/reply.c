@@ -29,27 +29,27 @@
 #include "string.h"
 #include "prjOS/include/bwio.h"
 
-int prjReply(int tid, char *msg, int msgLen) {
-	int ret;
+uint32_t prjReply(uint32_t tid, uint8_t *msg, uint32_t msgLen) {
 	asm (svcArg(SYSCALL_REPLY));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_reply(TaskDescriptor* active, KernelData *kData){
+uint32_t sys_reply(TaskDescriptor* active, KernelData *kData){
 	//bwprintf(COM2, "REPLY: DEBUG: Replying...\n\r");
 
-	int ret = 0;
+	uint32_t ret = 0;
 	/* Do error checking on arguments */
-	int tid = active->systemCall.param1;
-	char* reply = (char*)active->systemCall.param2;
-	int replyLen = active->systemCall.param3;
+	uint32_t tid = active->systemCall.param1;
+	uint8_t* reply = (uint8_t*)active->systemCall.param2;
+	uint32_t replyLen = active->systemCall.param3;
 
 	//bwprintf("REPLY: DEBUG: Tid: %d, ReplyLen: %d\n\r", active->taskId,replyLen);
 
 	/* Is the tid possible? */
-	int generationId = (tid & TASKS_ID_GENERATION_MASK) >> TASKS_ID_GENERATION_SHIFTBITS;
-	int taskIndex = tid & TASKS_ID_INDEX_MASK;
+	uint32_t generationId = (tid & TASKS_ID_GENERATION_MASK) >> TASKS_ID_GENERATION_SHIFTBITS;
+	uint32_t taskIndex = tid & TASKS_ID_INDEX_MASK;
 	if (generationId == 0 || taskIndex < 0 || taskIndex >= kData->tdCount) {
 		bwprintf("REPLY: ERR: Task ID does not exist: %d from :%d\n\r",tid, active->taskId);
 		active->state = TASKS_STATE_RUNNING;
@@ -74,10 +74,10 @@ int sys_reply(TaskDescriptor* active, KernelData *kData){
 		// Update the sender's state
 		sendingTask->state = TASKS_STATE_RUNNING;
 		// Copy message to sender's buffer
-		int destSize = sendingTask->systemCall.param5;
-		char* destination = (char*)sendingTask->systemCall.param4;
+		uint32_t destSize = sendingTask->systemCall.param5;
+		uint8_t* destination = (uint8_t*)sendingTask->systemCall.param4;
 
-		int size = replyLen;
+		uint32_t size = replyLen;
 		if (size > destSize) {
 			size = destSize;
 		}

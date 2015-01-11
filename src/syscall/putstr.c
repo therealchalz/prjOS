@@ -17,4 +17,4 @@ uint32_t prjPutStr(const char* str, uint32_t serialTid) {
 	if (len == 0)
 		return 0;
 
-	return prjPutBuf(str, len, serialTid);}
+	return prjPutBuf((const uint8_t*)str, len, serialTid);}

@@ -24,16 +24,17 @@
 
 
 #include "prjOS/include/syscall.h"
+#include "prjOS/include/sys_syscall.h"
 #include "prjOS/include/task.h"
 
-int prjExit() {
-	int ret;
+uint32_t prjExit() {
 	asm (svcArg(SYSCALL_THREADEXIT));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_exit(TaskDescriptor* active) {
+uint32_t sys_exit(TaskDescriptor* active) {
 	taskExit(active);
 	return 0;
 }

@@ -25,14 +25,14 @@
 #include "prjOS/include/syscall.h"
 #include "prjOS/include/task.h"
 
-int prjChangePriority(int priority) {
-	int ret;
+uint32_t prjChangePriority(uint32_t priority) {
 	asm (svcArg(SYSCALL_CHANGEPRIORITY));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_changePriority(TaskDescriptor* active){
+uint32_t sys_changePriority(TaskDescriptor* active){
 	setTaskReady(active);
 	if (active->systemCall.param1>=0 && active->systemCall.param1<TASKS_MAX_PRIORITY)
 		active->priority = active->systemCall.param1;

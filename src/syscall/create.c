@@ -25,26 +25,26 @@
 #include "prjOS/include/syscall.h"
 #include "prjOS/include/task.h"
 
-int prjCreate(int priority, void* entryPoint) {
-	int ret;
+uint32_t prjCreate(uint32_t priority, void* entryPoint) {
 	asm (svcArg(SYSCALL_CREATE));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
 uint32_t prjCreateMicroTask(void* entryPoint) {
-	int ret;
 	asm (svcArg(SYSCALL_CREATE_MICROTASK));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_create(TaskDescriptor* active, TaskCreateParameters* params) {
+uint32_t sys_create(TaskDescriptor* active, TaskCreateParameters* params) {
 	setupDefaultCreateParameters(params, (void*)active->systemCall.param2);
 	params->parentId = active->taskId;
 	params->taskType = TASK_TYPE_REGULAR;
 	//lets not let someone create a task with a higher priority then they are
-	int priority = active->systemCall.param1;
+	uint32_t priority = active->systemCall.param1;
 	if (priority < 0 && priority >= TASKS_MAX_PRIORITY) {
 		return ERR_CREATE_INVAL_PRIORITY;
 	}
@@ -56,12 +56,12 @@ int sys_create(TaskDescriptor* active, TaskCreateParameters* params) {
 	return 0;
 }
 
-int sys_create_microtask(TaskDescriptor* active, TaskCreateParameters* params) {
+uint32_t sys_createMicroTask(TaskDescriptor* active, TaskCreateParameters* params) {
 	setupDefaultCreateParameters(params, (void*)active->systemCall.param1);
 	params->parentId = active->taskId;
 	params->taskType = TASK_TYPE_MICRO;
 	//Microtasks inherit priority
-	int priority = active->priority;
+	uint32_t priority = active->priority;
 	if (priority < 0 && priority >= TASKS_MAX_PRIORITY) {
 		return ERR_CREATE_INVAL_PRIORITY;
 	}

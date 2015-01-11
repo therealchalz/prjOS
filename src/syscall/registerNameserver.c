@@ -30,14 +30,14 @@
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/base_tasks/nameserver.h"
 
-int prjRegisterNameserver(int tid) {
-	int ret;
+uint32_t prjRegisterNameserver(uint32_t tid) {
 	asm (svcArg(SYSCALL_REGISTERNS));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int sys_registerNs(TaskDescriptor* active, KernelData* kData){
+uint32_t sys_registerNs(TaskDescriptor* active, KernelData* kData){
 	setTaskReady(active);
 	kData->nameserverTid = active->systemCall.param1;
 	return 0;

@@ -29,16 +29,16 @@
 #include "string.h"
 #include "prjOS/include/bwio.h"
 
-int prjReceive(int *tid, char *msg, int msgLen) {
-	int ret;
+uint32_t prjReceive(uint32_t *tid, uint8_t *msg, uint32_t msgLen) {
 	asm (svcArg(SYSCALL_RECEIVE));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-int prjReceiveNonBlocking(int *tid, char *msg, int msgLen) {
-	int ret;
+uint32_t prjReceiveNonBlocking(uint32_t *tid, uint8_t *msg, uint32_t msgLen) {
 	asm (svcArg(SYSCALL_RECEIVE_NONBLOCK));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
@@ -53,12 +53,12 @@ static TaskDescriptor* pop(TaskDescriptor* active){
 	return 0;
 }
 
-int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
+uint32_t sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 	//NOTE: The return value can also be set from Send();ERR_RECEIVE_BUFFER_TOO_SMALL
 
-	int destLen = active->systemCall.param3;
-	int* tid = (int*)active->systemCall.param1;
-	char* dest = (char*) active->systemCall.param2;
+	uint32_t destLen = active->systemCall.param3;
+	uint32_t* tid = (uint32_t*)active->systemCall.param1;
+	uint8_t* dest = (uint8_t*) active->systemCall.param2;
 
 	//bwprintf("RECEIVE: DEBUG: Receiving... Message length: %d\n\r", destLen);
 
@@ -67,7 +67,7 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 		return ERR_RECEIVE_BAD_BUFFER;
 
 	TaskDescriptor* senderTask = pop(active);
-	int ret = 0;
+	uint32_t ret = 0;
 
 	if (senderTask!=0) {
 
@@ -77,10 +77,10 @@ int sys_receive(TaskDescriptor* active, KernelData * kData, bool blocking){
 		senderTask->state = TASKS_STATE_RPLY_BLK;
 
 		//Copy message to receiver's buffer
-		int sourceSize = senderTask->systemCall.param3;
-		char* source = (char*)senderTask->systemCall.param2;
+		uint32_t sourceSize = senderTask->systemCall.param3;
+		uint8_t* source = (uint8_t*)senderTask->systemCall.param2;
 
-		int size = sourceSize;
+		uint32_t size = sourceSize;
 		if (size > destLen) {
 			size = destLen;
 		}

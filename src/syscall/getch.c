@@ -18,8 +18,8 @@ uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid) {
 	uint32_t message = MESSAGE_GET_CHAR;
 	uint32_t ch;
 	ret = prjSend(serialTid,
-				(char*)(&message), sizeof(uint32_t),
-				(char*)(&ch), sizeof(uint32_t));
+				(uint8_t*)(&message), sizeof(uint32_t),
+				(uint8_t*)(&ch), sizeof(uint32_t));
 	if (ret < 1)
 		return -1;
 	*charOut = ch;
@@ -36,8 +36,8 @@ uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid) {
 	uint32_t message = MESSAGE_GET_CHAR_NONBLOCKING;
 	uint32_t ch;
 	prjSend(serialTid,
-				(char*)(&message), sizeof(uint32_t),
-				(char*)(&ch), sizeof(uint32_t));
+				(uint8_t*)(&message), sizeof(uint32_t),
+				(uint8_t*)(&ch), sizeof(uint32_t));
 	if (ch == 0xfffffff) {
 		ret = -1;
 	} else {

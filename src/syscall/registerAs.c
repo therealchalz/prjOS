@@ -10,7 +10,7 @@
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/base_tasks/nameserver.h"
 
-int prjRegisterAs(char* name) {
+uint32_t prjRegisterAs(char* name) {
 	//Construct query
 	NameserverQuery query;
 	NameserverQuery reply;
@@ -21,7 +21,7 @@ int prjRegisterAs(char* name) {
 	query.bufferLen = strlen(query.buffer)+1;
 
 	//Send query to nameserver
-	int ret = prjSend(prjWhoIs(NAMESERVER_NAMESTR), (char*)&query, sizeof(query), (char*)&reply, sizeof(reply));
+	uint32_t ret = prjSend(prjWhoIs(NAMESERVER_NAMESTR), (uint8_t*)&query, sizeof(query), (uint8_t*)&reply, sizeof(reply));
 	switch (ret) {
 	case ERR_SEND_TASKID_DNE:
 		bwprintf("REGISTERAS: ERR: Name server tid invalid.\n\r");

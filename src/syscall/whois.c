@@ -30,14 +30,14 @@
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/base_tasks/nameserver.h"
 
-int prjWhoIs (char *name) {
-	int ret;
+uint32_t prjWhoIs (char *name) {
+	uint32_t ret;
 	if (strcmp(name,NAMESERVER_NAMESTR) == 0) {
 		//Looking for NameServer - NOTE: Don't need arguments, so no big deal
 		asm (svcArg(SYSCALL_WHOISNS));
 		asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	} else {
-		int nsTid = prjWhoIs(NAMESERVER_NAMESTR);
+		uint32_t nsTid = prjWhoIs(NAMESERVER_NAMESTR);
 		if (nsTid <= 0)
 			return ERR_WHOIS_WRONG_TID;
 		//Construct query
@@ -49,7 +49,7 @@ int prjWhoIs (char *name) {
 		memcpy(query.buffer, name, strlen(name)+1);
 		query.bufferLen = strlen(name)+1;
 
-		ret = prjSend(nsTid, (char*)&query, sizeof(query), (char*)&reply, sizeof(reply));
+		ret = prjSend(nsTid, (uint8_t*)&query, sizeof(query), (uint8_t*)&reply, sizeof(reply));
 		switch (ret) {
 		case ERR_SEND_TASKID_DNE:
 			bwprintf("WHOIS: ERR: Name server tid invalid.\n\r");
@@ -76,11 +76,11 @@ int prjWhoIs (char *name) {
 				bwprintf("WHOIS: ERR: The response from the nameserver was invalid.\n\r");
 				ret = ERR_WHOIS_ERROR;
 			} else {
-				if (reply.bufferLen != sizeof(int)) {
+				if (reply.bufferLen != sizeof(uint32_t)) {
 					bwprintf("WHOIS: ERR: The response from the nameserver contained invalid data.\n\r");
 					ret = ERR_WHOIS_ERROR;
 				} else {
-					int value = (int)(*(int*)reply.buffer);
+					uint32_t value = (uint32_t)(*(uint32_t*)reply.buffer);
 					if (value  > 0) { //valid tid
 						//bwprintf("WHOIS: DEBUG: Tid is: %d.\n\r", value);
 						ret = value;
@@ -95,7 +95,7 @@ int prjWhoIs (char *name) {
 	return ret;
 }
 
-int sys_whoIsNs(TaskDescriptor* active, KernelData* kData) {
+uint32_t sys_whoIsNs(TaskDescriptor* active, KernelData* kData) {
 	setTaskReady(active);
 	return kData->nameserverTid;
 }

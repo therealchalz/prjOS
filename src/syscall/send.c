@@ -29,9 +29,9 @@
 #include "string.h"
 #include "prjOS/include/bwio.h"
 
-int prjSend(int tid, char *msg, int msgLen, char *reply, int replyLen) {
-	int ret;
+uint32_t prjSend(uint32_t tid, uint8_t *msg, uint32_t msgLen, uint8_t *reply, uint32_t replyLen) {
 	asm (svcArg(SYSCALL_SEND));
+	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
@@ -51,18 +51,18 @@ static void push(TaskDescriptor* active, TaskDescriptor* receiving){
 }
 
 
-int sys_send(TaskDescriptor* active, KernelData * kData) {
+uint32_t sys_send(TaskDescriptor* active, KernelData * kData) {
 	//NOTE: The return value can also be set from Reply();ERR_SEND_INCOMPLETE
 
 	//bwprintf("SEND: DEBUG: Sending...\n\r");
 
-	int ret = 0;
+	uint32_t ret = 0;
 
 	/* Do error checking on arguments */
 	/* Is the tid possible? */
-	int tid = active->systemCall.param1;
-	int generationId = (tid & TASKS_ID_GENERATION_MASK) >> TASKS_ID_GENERATION_SHIFTBITS;
-	int taskIndex = tid & TASKS_ID_INDEX_MASK;
+	uint32_t tid = active->systemCall.param1;
+	uint32_t generationId = (tid & TASKS_ID_GENERATION_MASK) >> TASKS_ID_GENERATION_SHIFTBITS;
+	uint32_t taskIndex = tid & TASKS_ID_INDEX_MASK;
 
 	if (generationId == 0 || taskIndex < 0 || taskIndex >= kData->tdCount) {
 		active->state = TASKS_STATE_RUNNING;
@@ -77,10 +77,10 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 	}
 
 	/* Are the buffers any good? */
-	char* message = (char*)active->systemCall.param2;
-	int messageLen = active->systemCall.param3;
-	char* reply = (char*)active->systemCall.param4;
-	int replyLen = active->systemCall.param5;
+	uint8_t* message = (uint8_t*)active->systemCall.param2;
+	uint32_t messageLen = active->systemCall.param3;
+	uint8_t* reply = (uint8_t*)active->systemCall.param4;
+	uint32_t replyLen = active->systemCall.param5;
 	if (message == 0 || reply == 0 || replyLen == 0) {
 		active->state = TASKS_STATE_RUNNING;
 		return ERR_SEND_BAD_BUFFER;
@@ -99,14 +99,14 @@ int sys_send(TaskDescriptor* active, KernelData * kData) {
 
 		receiveTask->sendQueueHead = 0; //reset pointer
 		//Copy message to receiver's buffer
-		int destSize = receiveTask->systemCall.param3;
-		char* destination = (char*)receiveTask->systemCall.param2;
-		int* receiverTidParam = (int*)receiveTask->systemCall.param1;
+		uint32_t destSize = receiveTask->systemCall.param3;
+		uint8_t* destination = (uint8_t*)receiveTask->systemCall.param2;
+		uint32_t* receiverTidParam = (uint32_t*)receiveTask->systemCall.param1;
 
 		// Set the tid of the receive
 		*(receiverTidParam) = active->taskId;
 
-		int size = messageLen;
+		uint32_t size = messageLen;
 		if (size > destSize) {
 			size = destSize;
 		}

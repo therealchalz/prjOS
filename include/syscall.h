@@ -116,22 +116,22 @@
 #define EVENTID_USB0				5		/* USB 0 interrupt */
 #define EVENTID_INVALID				-1
 
-int prjGetParentTid(void);
-int prjGetTid(void);
-int prjYield(void);
-int prjExit(void);
-int prjCreate(int priority, void* entryPoint);
-int prjChangePriority(int newPriority);
-int prjSend(int tid, char *msg, int msgLen, char *reply, int replyLen);
-int prjReceive(int *tid, char *msg, int msgLen);
-int prjReceiveNonBlocking(int *tid, char *msg, int msgLen);
-int prjReply(int tid, char *msg, int msgLen);
-int prjWhoIs(char *name);
-int prjRegisterNameserver(int tid);
-int prjRegisterAs(char* name);
+uint32_t prjGetParentTid(void);
+uint32_t prjGetTid(void);
+uint32_t prjYield(void);
+uint32_t prjExit(void);
+uint32_t prjCreate(uint32_t priority, void* entryPoint);
+uint32_t prjChangePriority(uint32_t newPriority);
+uint32_t prjSend(uint32_t tid, uint8_t *msg, uint32_t msgLen, uint8_t *reply, uint32_t replyLen);
+uint32_t prjReceive(uint32_t *tid, uint8_t *msg, uint32_t msgLen);
+uint32_t prjReceiveNonBlocking(uint32_t *tid, uint8_t *msg, uint32_t msgLen);
+uint32_t prjReply(uint32_t tid, uint8_t *msg, uint32_t msgLen);
+uint32_t prjWhoIs(char *name);
+uint32_t prjRegisterNameserver(uint32_t tid);
+uint32_t prjRegisterAs(char* name);
 uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid);
 uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid);
-uint32_t prjPutBuf(const char* str, uint16_t len, uint32_t serialTid);
+uint32_t prjPutBuf(const uint8_t* str, uint16_t len, uint32_t serialTid);
 uint32_t prjPutStr(const char* str, uint32_t serialTid);
 uint32_t prjAwaitEvent( uint32_t eventid);
 uint32_t prjCreateMicroTask(void* entryPoint);

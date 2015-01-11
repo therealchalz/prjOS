@@ -13,7 +13,7 @@
 #include "prjOS/include/base_tasks/nameserver.h"
 
 //len is number of bytes in str
-uint32_t prjPutBuf(const char* str, uint16_t len, uint32_t serialTid) {
+uint32_t prjPutBuf(const uint8_t* str, uint16_t len, uint32_t serialTid) {
 	if (serialTid == 0) {
 		return -1;
 	}
@@ -22,7 +22,7 @@ uint32_t prjPutBuf(const char* str, uint16_t len, uint32_t serialTid) {
 		len = MAX_MESSAGE_LEN;
 	}
 
-	char buffer[MAX_MESSAGE_LEN+6];
+	uint8_t buffer[MAX_MESSAGE_LEN+6];
 
 	*((uint32_t*)buffer) = MESSAGE_SEND_MESSAGE;
 	*((uint16_t*)(buffer+4)) = len;
@@ -31,6 +31,6 @@ uint32_t prjPutBuf(const char* str, uint16_t len, uint32_t serialTid) {
 
 	prjSend(serialTid,
 				buffer, len+6,
-				(char*)(&ret), sizeof(uint16_t));
+				(uint8_t*)(&ret), sizeof(uint16_t));
 	return len;
 }

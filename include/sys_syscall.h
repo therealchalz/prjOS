@@ -32,20 +32,21 @@
 #define EVENTS_STATE_INVALID		0	/* Keep as 0 so memset(0) will make everything invalid */
 #define EVENTS_STATE_VALID			1
 
-int sys_getParentTid(TaskDescriptor* active);
-int sys_getTid(TaskDescriptor* active);
-int sys_yield(TaskDescriptor* active);
-int sys_threadexit(TaskDescriptor* active);
-int sys_create(TaskDescriptor* active, TaskCreateParameters* params);
-int sys_changePriority(TaskDescriptor* active);
-int sys_exit(TaskDescriptor* active);
-int sys_send(TaskDescriptor* active, KernelData* kData);
-int sys_receive(TaskDescriptor* active, KernelData* kData, bool block);
-int sys_reply(TaskDescriptor* active, KernelData* kData);
-int sys_whoIsNs(TaskDescriptor* active, KernelData* kData);
-int sys_registerNs(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_getParentTid(TaskDescriptor* active);
+uint32_t sys_getTid(TaskDescriptor* active);
+uint32_t sys_yield(TaskDescriptor* active);
+uint32_t sys_threadexit(TaskDescriptor* active);
+uint32_t sys_create(TaskDescriptor* active, TaskCreateParameters* params);
+uint32_t sys_changePriority(TaskDescriptor* active);
+uint32_t sys_exit(TaskDescriptor* active);
+uint32_t sys_send(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_receive(TaskDescriptor* active, KernelData* kData, bool block);
+uint32_t sys_reply(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_whoIsNs(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_registerNs(TaskDescriptor* active, KernelData* kData);
 uint32_t sys_awaitEvent(TaskDescriptor* active, KernelData* kData);
 uint32_t sys_eventHappened(KernelData* kData, uint32_t eventid, uint32_t retValue);
+uint32_t sys_createMicroTask(TaskDescriptor* active, TaskCreateParameters* params);
 
 int prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
 

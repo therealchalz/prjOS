@@ -43,7 +43,7 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 
 	uint32_t oldId = td->taskId;
 	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
-	uint32_t stackPointer = td->stackPointer;
+	uint32_t stackPointer = (uint32_t)td->stackPointer;
 	uint32_t taskType = td->taskType;
 
 	memset(td, 0, sizeof(TaskDescriptor));
@@ -62,7 +62,7 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 		stackPointer = ((uint32_t)stackBase - stackOffset);
 
 		//Align to 32-bit boundary if required
-		if (stackPointer != stackPointer & ~0x3) {
+		if (stackPointer != (stackPointer & ~0x3)) {
 			stackPointer = stackPointer & ~0x3;
 		}
 	}

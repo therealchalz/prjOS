@@ -28,6 +28,10 @@
 #include "prjOS/include/task.h"
 #include "prjOS/include/kernel_data.h"
 
+/* Event ID Codes */
+#define EVENTS_STATE_INVALID		0	/* Keep as 0 so memset(0) will make everything invalid */
+#define EVENTS_STATE_VALID			1
+
 int sys_getParentTid(TaskDescriptor* active);
 int sys_getTid(TaskDescriptor* active);
 int sys_yield(TaskDescriptor* active);
@@ -40,6 +44,8 @@ int sys_receive(TaskDescriptor* active, KernelData* kData, bool block);
 int sys_reply(TaskDescriptor* active, KernelData* kData);
 int sys_whoIsNs(TaskDescriptor* active, KernelData* kData);
 int sys_registerNs(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_awaitEvent(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_eventHappened(KernelData* kData, uint32_t eventid, uint32_t retValue);
 
 int prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
 

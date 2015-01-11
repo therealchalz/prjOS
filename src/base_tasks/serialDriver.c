@@ -65,15 +65,14 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, char* mes
 
 void incomingCharacterPollingTask(void) {
 	uint32_t parentTid = prjGetParentTid();
-	uint32_t eventId;
+	uint32_t eventId = EVENTID_USB0;
 	char run = 1;
 
 	uint32_t message = MESSAGE_CHARACTER_RECEIVED;
 	uint32_t reply = 0;
 
 	while (run) {
-		//TODO:
-		//AwaitEvent
+		prjAwaitEvent(eventId);
 
 		prjSend(parentTid, (char*)&message, 4, (char*)&reply, 4);
 	}
@@ -94,18 +93,12 @@ void serialDriverTask() {
 
 	prjRegisterAs(NAMESERVER_NAME_SERIAL_DRIVER);
 
+	prjCreateMicroTask(incomingCharacterPollingTask);
+
 	while (data.keepRunning) {
 
-		// If someone is blocked waiting for data, we constantly poll to see if
-		// a character has arrived, otherwise we just block until someone has a
-		// request.
-		//TODO: improve fairness, or have some form of locking
-		if (data.blockedCharTid) {
-			msgLen = prjReceiveNonBlocking(&otherTask, message, MAX_MESSAGE_LEN);
-		} else {
-			msgLen = prjReceive(&otherTask, message, MAX_MESSAGE_LEN);
-			//msgLen = prjReceiveNonBlocking(&otherTask, message, MAX_MESSAGE_LEN);
-		}
+		//TODO: improve fairness, or have some form of locking, for reads
+		msgLen = prjReceive(&otherTask, message, MAX_MESSAGE_LEN);
 		if (msgLen > 0) {
 			processMessage(&data, otherTask, message, msgLen);
 		}
@@ -113,15 +106,13 @@ void serialDriverTask() {
 		if (data.blockedCharTid) {
 			uint32_t ch = readCharNonblocking();
 			if (ch != -1) {
-				uint32_t ret = prjReply(otherTask, (char*)&ch, 4);
+				uint32_t ret = prjReply(data.blockedCharTid, (char*)&ch, 4);
 				data.blockedCharTid = 0;
 				if (ret < 0) {
 					bwprintf("Serial Driver: Bad reply return value: %d\n\r", ret);
 				}
 			}
 		}
-
-		prjYield();
 	}
 
 	prjExit();

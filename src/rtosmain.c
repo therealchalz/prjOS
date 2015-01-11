@@ -89,11 +89,9 @@ void TaskSwitch(TaskDescriptor* t) {
 	asm (svcArg(0));
 }
 
-void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
-	//TODO: if this TD has nothing to to, look for one that has waiting work
+void handleSyscall(KernelData* kernelData, TaskDescriptor* t) {
 	switch (t->state) {
 	case TASKS_STATE_SYSCALL_BLK:
-	case 8:	//TODO: this is only here temporarily
 		break;
 	default:
 		return;
@@ -126,6 +124,9 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 	case SYSCALL_REPLY:
 		t->systemCall.returnValue = sys_reply(t, kernelData);
 		break;
+	case SYSCALL_AWAIT_EVENT:
+		sys_awaitEvent(t, kernelData);
+		break;
 	case SYSCALL_CREATE:
 		//This one receives special attention
 		{
@@ -142,8 +143,26 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 			}
 			schedulerAdd(kernelData->schedulerStructure, theNewTask);
 			t->systemCall.returnValue = theNewTask->taskId;
+			setTaskReady(t);
 		}
-		setTaskReady(t);
+		break;
+	case SYSCALL_CREATE_MICROTASK:
+		{
+			TaskCreateParameters params;
+			int r = sys_create_microtask(t, &params);
+			if (r) { //error
+				t->systemCall.returnValue = r;
+				break;
+			}
+			TaskDescriptor* theNewTask = createTask(kernelData->taskDescriptorList, kernelData->tdCount, &params);
+			if (theNewTask == 0) {
+				t->systemCall.returnValue = ERR_CREATE_NO_SPACE;
+				break;
+			}
+			schedulerAdd(kernelData->schedulerStructure, theNewTask);
+			t->systemCall.returnValue = theNewTask->taskId;
+			setTaskReady(t);
+		}
 		break;
 	case SYSCALL_CHANGEPRIORITY:
 		t->systemCall.returnValue = sys_changePriority(t);
@@ -160,10 +179,10 @@ void handleSyscall(TaskDescriptor* t, KernelData* kernelData) {
 void kernelTasks(TaskDescriptor* activeTask, KernelData* kernelData, uint32_t preemptionReason) {
 	if (preemptionReason == 0) {
 		//Syscall
-		handleSyscall(activeTask, kernelData);
+		handleSyscall(kernelData, activeTask);
 	} else {
 		//HW Interrupt, handled by kernel
-		handleInterrupt(preemptionReason);
+		handleInterrupt(kernelData, preemptionReason);
 	}
 }
 
@@ -193,11 +212,15 @@ int rtos_main(void* firstTaskFn) {
 	SchedulerStructure schedStruct;
 	schedulerInit(&schedStruct, taskDescriptors);
 
+	EventData eventData;
+	memset(&eventData, 0, sizeof(EventData));
+
 	KernelData kernelData;
 	memset(&kernelData, 0, sizeof(KernelData));
 	kernelData.taskDescriptorList = taskDescriptors;
 	kernelData.tdCount = KERNEL_NUMBER_OF_TASK_DESCRIPTORS;
 	kernelData.schedulerStructure = &schedStruct;
+	kernelData.eventData = &eventData;
 
 	//bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
 

@@ -143,6 +143,8 @@ contextSwitch:
 
 		#Now we've got to save off all the CPU state.  The stack will look like:
 		#R4,R5,R6,R7,R8,R9,R10,R11,LR(EXC_RETURN),R0,R1,R2,R3,R12,LR(Pre exception),PC(Pre exception),xPSR(Pre exception)
+		#Note that this whole frame is 17 items, or 17*4=68 bytes.  Also note that if the FPU context gets
+		#saved, then the frame is increased by 18 items, or 72 bytes, for a total context of 140 bytes.
 
 		# Disable global interrupts
 		CPSID		i

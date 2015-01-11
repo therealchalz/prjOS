@@ -15,21 +15,20 @@
 //#include "prjOS/include/hardware_dependent/board.h"
 //#include "prjOS/include/debug.h"
 //#include "prjOS/include/scheduler.h"
-//#include "prjOS/include/syscall.h"
-//#include "prjOS/include/sys_syscall.h"
-//#include "prjOS/include/kernel_data.h"
+#include "prjOS/include/syscall.h"
+#include "prjOS/include/sys_syscall.h"
+#include "prjOS/include/kernel_data.h"
 #include "string.h"
 //#include "prjOS/include/base_tasks/nameserver.h"
 //#include "inc/hw_nvic.h"
 extern void USB0DeviceIntHandler(void);
 
-void handleInterrupt(uint32_t isrNumber) {
-
-	//isrNumber = cpuHelperGetIsr();
+void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
 
 	switch (isrNumber) {
 	case INTERRUPT_USB0:
 		USB0DeviceIntHandler();
+		sys_eventHappened(kData, EVENTID_USB0, 0);
 	}
 }
 

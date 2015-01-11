@@ -43,6 +43,8 @@
 #define SYSCALL_WHOISNS				11
 #define SYSCALL_REGISTERNS			12
 #define SYSCALL_RECEIVE_NONBLOCK	13
+#define SYSCALL_AWAIT_EVENT			14
+#define SYSCALL_CREATE_MICROTASK	15
 
 //TODO: Consolidate error codes.  Try to match POSIX ones?
 
@@ -83,6 +85,37 @@
 #define ERR_WHOIS_NOT_FOUND			(-3)	/* Task not found */
 #define ERR_WHOIS_ERROR				(-4)	/* Other errors */
 
+/* AWAITEVENT error codes */
+#define ERR_AWAITEVENT_VOLATILE_IN_BUFFER	0	/* Volatile data is in the buffer */
+#define ERR_AWAITEVENT_INVALID_EVENT		(-1)	/* Invalid event */
+#define ERR_AWAITEVENT_CORRUPTED			(-2)	/* Corrupted volatile data.  Error indication in the event buffer. */
+#define ERR_AWAITEVENT_GET_VOLATILE			(-3)	/* Volatile data must be collected and interrupts re-enabled in the caller */
+#define ERR_AWAITEVENT_BUFFER_TOO_SMALL		(-4)	/* The event buffer was full */
+#define ERR_AWAITEVENT_BAD_EVENT_ID			(-5)	/* The event id given was not valid */
+
+/* DELAY error codes */
+#define ERR_DELAY_SUCCESS			0		/* The delay was successful */
+#define ERR_DELAY_INVALID_TID		(-1)	/* The TID used to contact the clock server was invalid */
+#define ERR_DELAY_WRONG_TID			(-2)	/* The TID used to contact the clock server is not the tid of the clock server */
+
+/* TIME error codes */
+#define ERR_TIME_INVALID_TID		(-1)	/* The TID used to contact the clock server was invalid */
+#define ERR_TIME_WRONG_TID			(-2)	/* The TID used to contact the clock server is not the tid of the clock server */
+
+/* DELAYUNTIL error codes */
+#define ERR_DELAYUNTIL_INVALID_TID	(-1)	/* The TID used to contact the clock server was invalid */
+#define ERR_DELAYUNTIL_WRONG_TID	(-2)	/* The TID used to contact the clock server is not the tid of the clock server */
+
+/* Event ID Codes */
+//TODO: these are hardware dependent to some extent - figure out what to do
+#define EVENTID_TC1					0		/* Timer 1 interrupt */
+#define EVENTID_TC2					1		/* Timer 2 interrupt */
+#define EVENTID_TC3					2		/* Timer 3 interrupt */
+#define EVENTID_UART1				3		/* UART1 interrupt */
+#define EVENTID_UART2				4		/* UART2 interrupt */
+#define EVENTID_USB0				5		/* USB 0 interrupt */
+#define EVENTID_INVALID				-1
+
 int prjGetParentTid(void);
 int prjGetTid(void);
 int prjYield(void);
@@ -100,5 +133,7 @@ uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid);
 uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid);
 uint32_t prjPutBuf(const char* str, uint16_t len, uint32_t serialTid);
 uint32_t prjPutStr(const char* str, uint32_t serialTid);
+uint32_t prjAwaitEvent( uint32_t eventid);
+uint32_t prjCreateMicroTask(void* entryPoint);
 
 #endif /* SYSCALL_H_ */

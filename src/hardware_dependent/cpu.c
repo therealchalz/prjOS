@@ -32,6 +32,12 @@ void cpuPrintInfo() {
 	bwprintf("Clock: %u\r\n", SysCtlClockGet());
 }
 
+void cpuInit() {
+	FPULazyStackingEnable();
+	FPUEnable();
+	SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+}
+
 void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startFunction) {
 	int r = 0;
 	for (r=0; r<13; r++)

@@ -26,23 +26,24 @@ extern void USB0DeviceIntHandler(void);
 void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
 
 	switch (isrNumber) {
-	case INTERRUPT_USB0:
+	case INT_USB0:
 		USB0DeviceIntHandler();
 		sys_eventHappened(kData, EVENTID_USB0, 0);
 	}
 }
 
-
 void initInterrupts() {
 	IntMasterDisable();
 
+	IntPriorityMaskSet( 1 << (8-NUM_PRIORITY_BITS));
+
 	//Lower ALL used interrupt sources to 1 or lower, but leave
 	//the SVC interrupt at 0.
-	IntPrioritySet(INTERRUPT_USB0, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(INTERRUPT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(INTERRUPT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(INT_USB0, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(INT_USB0, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(INT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(FAULT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(FAULT_SVCALL, 0 << (8-NUM_PRIORITY_BITS));
 
-	IntPrioritySet(INTERRUPT_SYSCALL, 0 << (8-NUM_PRIORITY_BITS));
-
-	//IntEnable(INT_USB0);
+	IntMasterEnable();
 }

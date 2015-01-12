@@ -146,18 +146,17 @@ void kernelTasks(TaskDescriptor* activeTask, KernelData* kernelData, uint32_t pr
 
 int rtos_main(void* firstTaskFn) {
 
-	//cpuInit();
+	cpuInit();	/* Clock and other configuration */
 
-	//boardInit();
-
-	//UARTInit(115200);
+	boardInit();	/* Initializes all the other board and
+						application specific CPU and board peripherals */
 
 	uint32_t* stack_top = &_stack_top;
 
 	//bwprintf("\n********Kernel Starting********\n\r\n");
 	//bwprintf("Stack Base: %x",(stackBasePtr));
-	cpuPrintInfo();
-	printCEnvironmentSettings();
+	//cpuPrintInfo();
+	//printCEnvironmentSettings();
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
@@ -183,16 +182,8 @@ int rtos_main(void* firstTaskFn) {
 	//Create first tasks
 	createFirstTask(&kernelData, taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, firstTaskFn);
 
-	//TODO:
-	//return 0;
-
 	TaskDescriptor* currentTask;
-
 	uint32_t preemptionReason = 0;
-
-	//Configure interrupts
-	initInterrupts();
-
 	while(1)
 	{
 		//bwprintf("Getting task to schedule...\n\r");

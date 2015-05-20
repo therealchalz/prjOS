@@ -32,16 +32,14 @@
 * Modified by:	Charles Hache <chache@brood.ca> for prjOS
 */
 
-#include <debug.h>
-#include <bwio.h>
-#include <hardware_dependent/cpu.h>
+#include "prjOS/include/debug.h"
+#include "prjOS/include/bwio.h"
+#include "prjOS/include/hardware_dependent/cpu.h"
 
 //-----------------------------------------------------------------------------
 // 							 Functions declarations
 //-----------------------------------------------------------------------------
 
-// Main should be defined on your main file so it's extern.
-extern int main(void);
 // rst_handler contains the code to run on reset.
 void rst_handler(void);
 // nmi_handler it's the code for an non maskerable interrupt.
@@ -50,6 +48,9 @@ void nmi_handler(void);
 void empty_def_handler(void);
 // this is the code for an hard fault.
 void hardfault_handler(void);
+
+extern int rtos_main(void* firstTaskFn);
+extern void firstTask(void);
 
 //-----------------------------------------------------------------------------
 // 						     Variables declarations
@@ -75,32 +76,32 @@ void(* myvectors[])(void) = {
 	// This are the fixed priority interrupts and the stack pointer loaded at startup at R13 (SP).
 	//												VECTOR N (Check Datasheet)
 	// here the compiler it's boring.. have to figure that out
-    (void (*)) &_stack_top, 
-    						// stack pointer should be 
+	(void (*)) &_stack_top, 
+							// stack pointer should be 
 							// placed here at startup.			0
-    rst_handler,			// code entry point					1
-    nmi_handler,			// NMI handler.						2
-    hardfault_handler,		// hard fault handler.				3
-    // Configurable priority interruts handler start here.
-    empty_def_handler,		// Memory Management Fault			4
-    empty_def_handler,		// Bus Fault						5
-    empty_def_handler,		// Usage Fault 						6
-    0,						// Reserved							7
-    0,						// Reserved							8
-    0,						// Reserved							9
-    0,						// Reserved							10
-    (void*)contextSwitch,			// SV call							11
-    empty_def_handler,		// Debug monitor					12
-    0,						// Reserved							13
-    empty_def_handler,		// PendSV							14
-    empty_def_handler,		// SysTick							15
-    // Peripherial interrupts start here.
+	rst_handler,			// code entry point					1
+	nmi_handler,			// NMI handler.						2
+	hardfault_handler,		// hard fault handler.				3
+	// Configurable priority interruts handler start here.
+	empty_def_handler,		// Memory Management Fault			4
+	empty_def_handler,		// Bus Fault						5
+	empty_def_handler,		// Usage Fault 						6
+	0,						// Reserved							7
+	0,						// Reserved							8
+	0,						// Reserved							9
+	0,						// Reserved							10
+	contextSwitch,			// SV call							11
+	empty_def_handler,		// Debug monitor					12
+	0,						// Reserved							13
+	empty_def_handler,		// PendSV							14
+	hwContextSwitch,		// SysTick							15
+	// Peripherial interrupts start here.
 	empty_def_handler,		// GPIO Port A						16
 	empty_def_handler,		// GPIO Port B						17
 	empty_def_handler,		// GPIO Port C						18
 	empty_def_handler,		// GPIO Port D						19
 	empty_def_handler,		// GPIO Port E						20
-	empty_def_handler,		// UART 0							21
+	hwContextSwitch,		// UART 0							21
 	empty_def_handler,		// UART 1							22
 	empty_def_handler,		// SSI 0							23
 	empty_def_handler,		// I2C 0							24
@@ -139,7 +140,7 @@ void(* myvectors[])(void) = {
 	0,						// Reserved							57
 	0,						// Reserved							58
 	empty_def_handler,		// Hibernation module				59
-	empty_def_handler,		// USB								60
+	hwContextSwitch,		// USB								60
 	0,						// Reserved							61
 	empty_def_handler,		// UDMA SW							62
 	empty_def_handler,		// UDMA Error						63
@@ -251,23 +252,33 @@ void(* myvectors[])(void) = {
 void rst_handler(void){	
 	// Copy the .data section pointers to ram from flash.
 	// Look at LD manual (Optional Section Attributes).
-	
+
+	//unsigned long *stack_top = &_stack_top;
+	//unsigned long *start_text = &_start_text;
+	//unsigned long *end_text = &_end_text;
+	//unsigned long *start_data = &_start_data;
+	//unsigned long *end_data = &_end_data;
+	//unsigned long *start_bss = &_start_bss;
+	//unsigned long *end_bss =&_end_bss;
+
+
 	// source and destination pointers
 	unsigned long *src;
 	unsigned long *dest;
 	
 	//this should be good!
 	src = &_end_text;
+	//src = &_start_text;
 	dest = &_start_data;
 	
 	//this too
-    while(dest < &_end_data)
-    {
-        *dest++ = *src++;
-    }
+	while(dest < &_end_data)
+	{
+		*dest++ = *src++;
+	}
 	
-    // now set the .bss segment to 0!
-    dest = &_start_bss;
+	// now set the .bss segment to 0!
+	dest = &_start_bss;
 	while(dest < &_end_bss){
 		*dest++ = 0;
 	}
@@ -275,7 +286,7 @@ void rst_handler(void){
 	// after setting copying .data to ram and "zero-ing" .bss we are good
 	// to start the main() method!
 	// There you go!
-	main();
+	rtos_main((void*)&firstTask);
 	cpuBarf();
 	bwprintf("main() returned\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
@@ -289,8 +300,8 @@ void nmi_handler(void){
 	printCurrentStackTop(12);
 	bwprintf("NMI Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
-    while(1){
-    }
+	while(1){
+	}
 }
 
 // Hard fault handler code NVIC 3
@@ -301,8 +312,8 @@ void hardfault_handler(void){
 	printCurrentStackTop(12);
 	bwprintf("Hardfault Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
-    while(1){
-    }
+	while(1){
+	}
 }
 
 // Empty handler used as default.
@@ -311,6 +322,6 @@ void empty_def_handler(void){
 	printCurrentStackTop(12);
 	bwprintf("Empty Handler\n\r");
 	// Just loop forever, so if you want to debug the processor it's running.
-    while(1){
-    }
+	while(1){
+	}
 }

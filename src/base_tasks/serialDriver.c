@@ -65,7 +65,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 
 void incomingCharacterPollingTask(void) {
 	uint32_t parentTid = prjGetParentTid();
-	uint32_t eventId = EVENTID_USB0;
+	uint32_t eventId = EVENTID_UART0;
 	char run = 1;
 
 	uint32_t message = MESSAGE_CHARACTER_RECEIVED;

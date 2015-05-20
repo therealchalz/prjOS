@@ -6,7 +6,7 @@
  */
 
 
-#include <prjOS/include/base_tasks/serialDriver.h>
+#include "prjOS/include/base_tasks/serialDriver.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "prjOS/include/syscall.h"

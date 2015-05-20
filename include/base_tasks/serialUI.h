@@ -19,6 +19,14 @@
 
 #define MAX_LINE_LENGTH		80
 
+#define SERIAL_UI_MESSAGE_TYPE_COMMAND_SUBSCRIBE		1
+#define SERIAL_UI_MESSAGE_TYPE_CHARACTER_RECEIVED		2
+
+typedef struct {
+	uint8_t messageType;
+	uint32_t data;
+} serialUIMessage;
+
 extern void serialUITask(void);
 
 #endif /* PRJOS_INCLUDE_BASE_TASKS_SERIALUI_H_ */

@@ -53,7 +53,7 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 		if (idx >= 0 && idx < KERNEL_NUMBER_OF_TASKS) {
 			taskType = TASK_TYPE_REGULAR;
 			stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
-		} else if (idx >= KERNEL_NUMBER_OF_TASKS && idx < KERNEL_NUMBER_OF_MICROTASKS) {
+		} else if (idx >= KERNEL_NUMBER_OF_TASKS && idx < KERNEL_NUMBER_OF_MICROTASKS+KERNEL_NUMBER_OF_TASKS) {
 			taskType = TASK_TYPE_MICRO;
 			stackOffset = KERNEL_STACK_SIZE +
 					(KERNEL_NUMBER_OF_TASKS * KERNEL_TASK_DEFAULT_STACK_SIZE) +
@@ -170,7 +170,7 @@ TaskDescriptor* createTask(TaskDescriptor *tds, uint32_t count, const TaskCreate
 		break;
 	case TASK_TYPE_MICRO:
 		minIdx = KERNEL_NUMBER_OF_TASKS;
-		maxIdx = KERNEL_NUMBER_OF_MICROTASKS-1;
+		maxIdx = KERNEL_NUMBER_OF_MICROTASKS+KERNEL_NUMBER_OF_TASKS-1;
 		break;
 	}
 	for (i=minIdx; i<=maxIdx; i++) {

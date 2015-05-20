@@ -12,6 +12,12 @@
 
 int bwprintf(const char *format, ...);
 
-int bwsprintf(char *out, const char *format);
+int bwprintf2(const char *format, int* varg);
+
+int bwsprintf(char *out, const char *format, ...);
+
+int bwsprintf2(char *out, const char *format, int* varg);
+
+void bwputc(int out);
 
 #endif /* BWIO_H_ */

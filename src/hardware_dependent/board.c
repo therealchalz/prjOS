@@ -27,6 +27,19 @@
 
 #include "prjOS/include/hardware_dependent/board.h"
 
+
+static void statusLedInit() {
+	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, RED_LED|BLUE_LED|GREEN_LED);
+	GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_6);
+	GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_7, GPIO_PIN_7);
+	GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_7);
+	GPIOPadConfigSet(GPIO_PORTB_BASE, GPIO_PIN_6, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_OD_WPU);
+}
+
+static void statusLedSetStatus(char status) {
+	GPIOPinWrite(GPIO_PORTF_BASE, RED_LED|BLUE_LED|GREEN_LED, (status?RED_LED|BLUE_LED|GREEN_LED:0));
+}
+
 void boardInit() {
 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
@@ -36,58 +49,27 @@ void boardInit() {
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
 
 	initInterrupts();
-
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
-	TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet()/1000);
-	IntEnable(INT_TIMER0A);
-	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-	TimerEnable(TIMER0_BASE, TIMER_A);
 
 	SysTickPeriodSet(SysCtlClockGet()/100);
 	SysTickIntEnable();
 
-	// unlock F0 - it will be GPIO for us
-	HWREG(GPIO_PORTF_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY;
-	HWREG(GPIO_PORTF_BASE + GPIO_O_CR) |= GPIO_PIN_0;
-	HWREG(GPIO_PORTF_BASE + GPIO_O_LOCK) = 0;
+	GPIOPinConfigure(GPIO_PA0_U0RX);
+	GPIOPinConfigure(GPIO_PA1_U0TX);
+	GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 115200,
+			UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE);
+	IntEnable(INT_UART0);
+	UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
+	UARTEnable(UART0_BASE);
 
 	statusLedInit();
-	motorLedsInit();
-	statusLedSetStatus(0);
-	motorGpiosInit();
+	statusLedSetStatus(1);
 
-	// enable NMI
-	// unlock D7
-	HWREG(GPIO_PORTD_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY;
-	HWREG(GPIO_PORTD_BASE + GPIO_O_CR) |= GPIO_PIN_7;
-	HWREG(GPIO_PORTD_BASE + GPIO_O_LOCK) = 0;
-	// configure NMI
-	GPIOPinConfigure(GPIO_PD7_NMI);
-	GPIOPadConfigSet(GPIO_PORTD_BASE, GPIO_PIN_7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
-	GPIODirModeSet(GPIO_PORTD_BASE, GPIO_PIN_7, GPIO_DIR_MODE_HW);
-	// lock D7
-	HWREG(GPIO_PORTD_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY;
-	HWREG(GPIO_PORTD_BASE + GPIO_O_CR) &= ~GPIO_PIN_7;
-	HWREG(GPIO_PORTD_BASE + GPIO_O_LOCK) = 0;
-
-	usbCdcInit();
-
-	//TODO: this better
-	//wait a bit for the USB CDC to init so that all the messages will show up
-	//on the host
-
-	//temporarily allow this
-	IntPrioritySet(INT_TIMER0A, 0 << (8-NUM_PRIORITY_BITS));
-	uint64_t cdcInit = getMilliSeconds();
-	while (getMilliSeconds() < cdcInit+5000) {}
-	IntPrioritySet(INT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
 }
 
-void boardSetIndicatorLED(char status) {
+void boardSetIndicatorLED(int status) {
 	statusLedSetStatus(status);
 }

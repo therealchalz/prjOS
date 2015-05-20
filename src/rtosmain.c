@@ -153,11 +153,6 @@ int rtos_main(void* firstTaskFn) {
 
 	uint32_t* stack_top = &_stack_top;
 
-	//bwprintf("\n********Kernel Starting********\n\r\n");
-	//bwprintf("Stack Base: %x",(stackBasePtr));
-	//cpuPrintInfo();
-	//printCEnvironmentSettings();
-
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
 	initializeTds(taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, stack_top);
@@ -177,7 +172,11 @@ int rtos_main(void* firstTaskFn) {
 	kernelData.schedulerStructure = &schedStruct;
 	kernelData.eventData = &eventData;
 
-	//bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
+	bwprintf("\n********Kernel Starting********\n\r\n");
+	//bwprintf("Stack Base: %x",(stackBasePtr));
+	cpuPrintInfo();
+	printCEnvironmentSettings();
+	bwprintf("Kernel structures are taking %d bytes.\n\r", ((KERNEL_NUMBER_OF_TASK_DESCRIPTORS)*sizeof(TaskDescriptor) + sizeof(SchedulerStructure) + sizeof(KernelData)));
 
 	//Create first tasks
 	createFirstTask(&kernelData, taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, firstTaskFn);

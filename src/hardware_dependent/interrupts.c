@@ -21,15 +21,23 @@
 #include "string.h"
 //#include "prjOS/include/base_tasks/nameserver.h"
 //#include "inc/hw_nvic.h"
-extern void USB0DeviceIntHandler(void);
+//extern void USB0DeviceIntHandler(void);
 
 void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
-
 	switch (isrNumber) {
 	case INT_USB0:
-		USB0DeviceIntHandler();
+		//USB0DeviceIntHandler();
 		sys_eventHappened(kData, EVENTID_USB0, 0);
+		break;
+	case INT_UART0:
+		{
+			uint32_t interrupts= UARTIntStatus(UART0_BASE, 1);
+			UARTIntClear(UART0_BASE, interrupts);
+			sys_eventHappened(kData, EVENTID_UART0, 0);
+			break;
+		}
 	}
+
 }
 
 void initInterrupts() {
@@ -40,7 +48,7 @@ void initInterrupts() {
 	//Lower ALL used interrupt sources to 1 or lower, but leave
 	//the SVC interrupt at 0.
 	IntPrioritySet(INT_USB0, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(INT_USB0, 1 << (8-NUM_PRIORITY_BITS));
+	IntPrioritySet(INT_UART0, 1 << (8-NUM_PRIORITY_BITS));
 	IntPrioritySet(INT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
 	IntPrioritySet(FAULT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
 	IntPrioritySet(FAULT_SVCALL, 0 << (8-NUM_PRIORITY_BITS));

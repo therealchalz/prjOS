@@ -111,9 +111,10 @@
 #define EVENTID_TC1					0		/* Timer 1 interrupt */
 #define EVENTID_TC2					1		/* Timer 2 interrupt */
 #define EVENTID_TC3					2		/* Timer 3 interrupt */
-#define EVENTID_UART1				3		/* UART1 interrupt */
-#define EVENTID_UART2				4		/* UART2 interrupt */
-#define EVENTID_USB0				5		/* USB 0 interrupt */
+#define EVENTID_UART0				3		/* UART0 interrupt */
+#define EVENTID_UART1				4		/* UART1 interrupt */
+#define EVENTID_UART2				5		/* UART2 interrupt */
+#define EVENTID_USB0				6		/* USB 0 interrupt */
 #define EVENTID_INVALID				-1
 
 uint32_t prjGetParentTid(void);

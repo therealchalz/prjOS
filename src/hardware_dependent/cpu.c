@@ -27,8 +27,8 @@
 #include "prjOS/include/hardware_dependent/cpu.h"
 
 void cpuPrintInfo() {
-	bwprintf("Processor: TM4C123\r\n");
-	bwprintf("Board: prjStepperDriver 1.0\r\n");
+	bwprintf("Processor: LM4F120\r\n");
+	bwprintf("Board: Stellaris Launchpad Rev A\r\n");
 	bwprintf("Clock: %u\r\n", SysCtlClockGet());
 }
 

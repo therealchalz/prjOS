@@ -31,10 +31,14 @@
 #include "inc/hw_types.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/gpio.h"
-#include "stepper_board.h"
+#include "include/common.h"
+
+#define RED_LED   GPIO_PIN_1
+#define BLUE_LED  GPIO_PIN_2
+#define GREEN_LED GPIO_PIN_3
 
 void boardInit();
 
-void boardSetIndicatorLED(char status);
+void boardSetIndicatorLED(int status);
 
 #endif /* BOARD_H_ */

@@ -21,6 +21,7 @@
 
 #define SERIAL_UI_MESSAGE_TYPE_COMMAND_SUBSCRIBE		1
 #define SERIAL_UI_MESSAGE_TYPE_CHARACTER_RECEIVED		2
+#define SERIAL_UI_MESSAGE_TYPE_REDRAW					3
 
 typedef struct {
 	uint8_t messageType;

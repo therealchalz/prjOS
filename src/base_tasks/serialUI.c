@@ -38,7 +38,7 @@ static void getCommand(char* line, char* command) {
 	char* src = line+1;
 	char* dest = command;
 	uint16_t soFar = 0;
-	while (soFar++ < MAX_LINE_LENGTH && *src != '0') {
+	while (soFar++ < MAX_LINE_LENGTH && *src != 0) {
 		*dest = *src;
 		dest++;
 		src++;
@@ -72,29 +72,41 @@ void serialUICharacterCourier(void) {
 void serialUITask(void) {
 	uint32_t tid;
 	uint32_t ch = 0;
+	uint8_t run = 1;
+	uint32_t serialDriverTid;
+	uint8_t line[MAX_LINE_LENGTH];
+	uint8_t command[MAX_LINE_LENGTH];
+	uint16_t cursor = 0;
+	uint32_t commandExecutorTid = 0;
+
 	serialUIMessage message;
+
+	prjRegisterAs(NAMESERVER_NAME_SERIAL_UI);
 
 	prjReceive((uint32_t*)&tid, (uint8_t*)&ch, 1);
 	prjReply(tid, (uint8_t*)&ch, 1);
 
 	tid = prjCreateMicroTask(serialUICharacterCourier);
 	prjSend(tid, &ch, sizeof(ch), &ch, sizeof(ch));
-	bwprintf("Init: Serial UI running\n\r");
 
-	uint8_t run = 1;
+	serialDriverTid = prjWhoIs(NAMESERVER_NAME_SERIAL_DRIVER);
 
-	uint32_t serialDriverTid = prjWhoIs(NAMESERVER_NAME_SERIAL_DRIVER);
-
-	char line[MAX_LINE_LENGTH];
-	char command[MAX_LINE_LENGTH];
-
-	uint16_t cursor = 0;
 	clearLine(line, &cursor);
 	prjPutStr(line, serialDriverTid);
 	while (run) {
 		if (prjReceive((uint32_t*)&tid, (uint8_t*)&message, sizeof(serialUIMessage)) > 0) {
 			switch (message.messageType) {
 			case SERIAL_UI_MESSAGE_TYPE_COMMAND_SUBSCRIBE:
+				if (commandExecutorTid == 0) {
+					commandExecutorTid = tid;
+				} else {
+					uint8_t dummy = 0;
+					prjReply(tid, &dummy, 1);
+				}
+				break;
+			case SERIAL_UI_MESSAGE_TYPE_REDRAW:
+				prjPutStr("\r", serialDriverTid);
+				prjPutStr(line, serialDriverTid);
 				prjReply(tid, (uint8_t*)&ch, 1);
 				break;
 			case SERIAL_UI_MESSAGE_TYPE_CHARACTER_RECEIVED:
@@ -113,8 +125,10 @@ void serialUITask(void) {
 					prjPutStr(line, serialDriverTid);
 				} else if (ch == 13) {
 					getCommand(line, command);
-					prjPutStr("\n\rGot Command:\n\r", serialDriverTid);
-					prjPutStr(command, serialDriverTid);
+					if (commandExecutorTid != 0) {
+						prjReply(commandExecutorTid, &command, strlen(command)+1);
+						commandExecutorTid = 0;
+					}
 					prjPutStr("\n\r", serialDriverTid);
 					clearLine(line, &cursor);
 					prjPutStr(line, serialDriverTid);

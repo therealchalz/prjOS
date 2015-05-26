@@ -39,6 +39,7 @@
 
 //Names consolidated here for system tasks
 #define NAMESERVER_NAME_SERIAL_DRIVER	"serialdriver"
+#define NAMESERVER_NAME_SERIAL_UI		"serialui"
 
 typedef struct NameserverEntry {
 	unsigned int tid;

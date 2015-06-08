@@ -47,6 +47,7 @@ uint32_t sys_registerNs(TaskDescriptor* active, KernelData* kData);
 uint32_t sys_awaitEvent(TaskDescriptor* active, KernelData* kData);
 uint32_t sys_eventHappened(KernelData* kData, uint32_t eventid, uint32_t retValue);
 uint32_t sys_createMicroTask(TaskDescriptor* active, TaskCreateParameters* params);
+uint32_t sys_metaInfo(TaskDescriptor* active, KernelData* kData);
 
 int prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
 

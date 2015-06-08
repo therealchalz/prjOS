@@ -43,7 +43,7 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 
 	uint32_t oldId = td->taskId;
 	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
-	uint32_t stackPointer = (uint32_t)td->stackPointer;
+	uint32_t stackPointer = (uint32_t)td->stackBase;
 	uint32_t taskType = td->taskType;
 
 	memset(td, 0, sizeof(TaskDescriptor));
@@ -70,6 +70,7 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 	td->taskType = taskType;
 	td->taskId = oldId;
 	td->stackPointer = (uint32_t*)stackPointer;
+	td->stackBase = (uint32_t*)stackPointer;
 	td->state = TASKS_STATE_INVALID;
 }
 
@@ -198,4 +199,71 @@ TaskDescriptor* createTask(TaskDescriptor *tds, uint32_t count, const TaskCreate
 	}
 
 	return ret;
+}
+
+uint16_t getNumRegularTasks(TaskDescriptor* tdList, uint32_t count) {
+	int i;
+	uint16_t ret = 0;
+	for (i = 0; i<KERNEL_NUMBER_OF_TASKS; i++) {
+		if (!isTdAvailable(&tdList[i])) {
+			ret++;
+		}
+	}
+	return ret;
+}
+uint16_t getNumMicroTasks(TaskDescriptor* tdList, uint32_t count) {
+	int i;
+	uint16_t ret = 0;
+	for (i = KERNEL_NUMBER_OF_TASKS; i<KERNEL_NUMBER_OF_MICROTASKS+KERNEL_NUMBER_OF_TASKS; i++) {
+		if (!isTdAvailable(&tdList[i])) {
+			ret++;
+		}
+	}
+	return ret;
+}
+uint32_t getRegularTaskStackSize() {
+	return KERNEL_TASK_DEFAULT_STACK_SIZE;
+}
+uint32_t getMicroTaskStackSize() {
+	return KERNEL_MICROTASK_DEFAULT_STACK_SIZE;
+}
+
+uint32_t getParentTid(TaskDescriptor* tdList, uint32_t count, uint32_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0;
+	}
+	return task->parentId;
+}
+
+uint32_t* getStackBase(TaskDescriptor* tdList, uint32_t count, uint32_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0;
+	}
+	return task->stackBase;
+}
+
+uint32_t* getStackHead(TaskDescriptor* tdList, uint32_t count, uint32_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0;
+	}
+	return task->stackPointer;
+}
+
+uint32_t getTaskState(TaskDescriptor* tdList, uint32_t count, uint32_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0;
+	}
+	return task->state;
+}
+
+uint8_t getTaskType(TaskDescriptor* tdList, uint32_t count, uint32_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0;
+	}
+	return task->taskType;
 }

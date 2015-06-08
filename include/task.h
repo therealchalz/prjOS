@@ -77,6 +77,7 @@ typedef struct TaskDescriptor {
 	struct TaskDescriptor* sendQueueNext;
 	struct TaskDescriptor* sendQueueHead;
 	struct TaskDescriptor* sendQueueTail;
+	uint32_t* stackBase;
 } TaskDescriptor;
 
 typedef struct TaskCreateParameters {
@@ -98,5 +99,15 @@ void setTaskReady(TaskDescriptor* td);
 void taskExit(TaskDescriptor* td);
 uint32_t hasExited(TaskDescriptor* td);
 TaskDescriptor* findTd(int td, TaskDescriptor* tdList, uint32_t count);
+
+uint16_t getNumRegularTasks(TaskDescriptor* tdList, uint32_t count);
+uint16_t getNumMicroTasks(TaskDescriptor* tdList, uint32_t count);
+uint32_t getRegularTaskStackSize();
+uint32_t getMicroTaskStackSize();
+uint32_t getParentTid(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
+uint32_t* getStackBase(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
+uint32_t* getStackHead(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
+uint32_t getTaskState(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
+uint8_t getTaskType(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
 
 #endif /* TASK_H_ */

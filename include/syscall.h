@@ -45,6 +45,7 @@
 #define SYSCALL_RECEIVE_NONBLOCK	13
 #define SYSCALL_AWAIT_EVENT			14
 #define SYSCALL_CREATE_MICROTASK	15
+#define SYSCALL_META_INFO			16
 
 //TODO: Consolidate error codes.  Try to match POSIX ones?
 
@@ -117,6 +118,45 @@
 #define EVENTID_USB0				6		/* USB 0 interrupt */
 #define EVENTID_INVALID				-1
 
+/* META_INFO request structure */
+typedef struct MetaInfoRequest {
+	uint32_t requestType;		//Required
+	uint32_t taskId;			//Optional parameter for some calls
+	void* extendedResult;		//Pointer to an extended result structure if required
+} MetaInfoRequest;
+
+#define META_REQUEST_TASKS_INFO				1
+typedef struct MetaTasksInfoResult {
+	uint16_t numTasks;
+	uint16_t numMicroTasks;
+	uint32_t taskDefaultStackSize;
+	uint32_t microTaskDefaultStackSize;
+	uint16_t maxNumTasks;
+	uint16_t maxMicroNumTasks;
+} MetaTasksInfoResult;
+
+#define META_REQUEST_TOTAL_RAM				2
+#define META_REQUEST_USED_RAM				3	//Stacks of all tasks + static & global variables + kernel stack
+
+#define META_REQUEST_TASK_INFO				4
+typedef struct MetaTaskInfoResult {
+	uint32_t taskID;
+	uint32_t* stackBase;
+	uint32_t* stackHead;
+	uint8_t taskState;
+	uint32_t parentTid;
+	uint8_t taskType;
+} MetaTaskInfoResult;
+
+#define META_REQUEST_STATIC_USED_RAM		5	//Static & global variables
+#define META_REQUEST_NUMBER_OF_TASKS		6
+#define META_REQUEST_NUMBER_OF_MICROTASKS	7
+#define META_REQUEST_STACK_SIZE				8	//Requires taskID parameter
+#define META_REQUEST_USED_STACK				9	//Requires taskID parameter
+#define META_REQUEST_SYSTEM_LOAD			10
+#define META_REQUEST_TOTAL_FLASH			11
+#define META_REQUEST_USED_FLASH				12
+
 uint32_t prjGetParentTid(void);
 uint32_t prjGetTid(void);
 uint32_t prjYield(void);
@@ -136,5 +176,6 @@ uint32_t prjPutBuf(const uint8_t* str, uint16_t len, uint32_t serialTid);
 uint32_t prjPutStr(const char* str, uint32_t serialTid);
 uint32_t prjAwaitEvent( uint32_t eventid);
 uint32_t prjCreateMicroTask(void* entryPoint);
+uint32_t prjMetaInfo(MetaInfoRequest* request);
 
 #endif /* SYSCALL_H_ */

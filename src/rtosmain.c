@@ -130,6 +130,9 @@ void handleSyscall(KernelData* kernelData, TaskDescriptor* t) {
 	case SYSCALL_REGISTERNS:
 		t->systemCall.returnValue = sys_registerNs(t, kernelData);
 		break;
+	case SYSCALL_META_INFO:
+		t->systemCall.returnValue = sys_metaInfo(t, kernelData);
+		break;
 	}
 }
 

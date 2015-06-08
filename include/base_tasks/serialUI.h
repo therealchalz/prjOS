@@ -28,6 +28,14 @@ typedef struct {
 	uint32_t data;
 } serialUIMessage;
 
-extern void serialUITask(void);
+typedef struct {
+	uint32_t serialDriverTid;
+} SerialUIData;
+
+typedef struct {
+	uint32_t serialDriverTid;
+} SerialUIInitData;
+
+uint32_t initializeSerialUI(SerialUIInitData initData);
 
 #endif /* PRJOS_INCLUDE_BASE_TASKS_SERIALUI_H_ */

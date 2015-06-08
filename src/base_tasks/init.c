@@ -25,15 +25,7 @@ void initTask(void* firstTaskfn) {
 	bwprintf("Init starting\n\r");
 	tid = prjCreate(0, nameserverEntry);
 	prjSend(tid, &dummy, 1, &dummy, 1);
-	bwprintf("Init: Nameserver running\n\r");
-
-	tid = prjCreate(0, serialDriverTask);
-	prjSend(tid, &dummy, 1, &dummy, 1);
-	bwprintf("Init: Serial driver running\n\r");
-
-	tid = prjCreate(0, serialUITask);
-	prjSend(tid, &dummy, 1, &dummy, 1);
-	bwprintf("Init: Serial UI running\n\r");
+	bwprintf("Init: Nameserver running (%d)\n\r", tid);
 
 	bwprintf("Init: Creating first task (0x%x)\n\r", firstTaskfn);
 	prjCreate(0, firstTaskfn);

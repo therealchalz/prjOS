@@ -6,6 +6,22 @@
  */
 #include <prjOS/include/base_tasks/serialDriver.h>
 
+uint32_t initializeSerialDriver(SerialDriverInitData initData) {
+	uint32_t driverTid;
+	uint32_t dummy;
+	SerialDriverData driverData;
+
+	driverData.getCharNonBlocking = initData.getCharNonBlocking;
+	driverData.putCharBlocking = initData.putCharBlocking;
+	driverData.receiveAwaitEventId = initData.receiveAwaitEventId;
+
+	driverTid = prjCreate(0, serialDriverTask);
+
+	prjSend(driverTid, (uint8_t*)&driverData, sizeof(SerialDriverData), (uint8_t*)&dummy, sizeof(dummy));
+
+	return driverTid;
+}
+
 static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* message, uint32_t size) {
 	if (size < 4) {
 		prjReply(otherTask, message, size);
@@ -23,7 +39,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 		prjReply(otherTask, (uint8_t*)&ch, 4);
 		break;
 	case MESSAGE_GET_CHAR:
-		ch = readCharNonblocking();
+		ch = data->getCharNonBlocking();
 		if (ch == -1) {
 			data->blockedCharTid = otherTask;
 		} else {
@@ -31,7 +47,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 		}
 		break;
 	case MESSAGE_GET_CHAR_NONBLOCKING:
-		ch = readCharNonblocking();
+		ch = data->getCharNonBlocking();
 		prjReply(otherTask, (uint8_t*)&ch, 4);
 		break;
 	case MESSAGE_SEND_MESSAGE:
@@ -46,7 +62,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 		uint8_t* msg = message;
 		uint16_t bytesSent = msgLen;
 		while (msgLen--) {
-			bwputc(*msg);
+			data->putCharBlocking(*msg);
 			msg++;
 		}
 
@@ -65,11 +81,16 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 
 void incomingCharacterPollingTask(void) {
 	uint32_t parentTid = prjGetParentTid();
-	uint32_t eventId = EVENTID_UART0;
+	uint32_t eventId;
 	char run = 1;
 
 	uint32_t message = MESSAGE_CHARACTER_RECEIVED;
 	uint32_t reply = 0;
+
+	prjReceive(&reply, (uint8_t*)&eventId, sizeof(uint32_t));
+	prjReply(reply, (uint8_t*)&eventId, sizeof(uint32_t));
+
+	//TODO: find a way to make this task exit
 
 	while (run) {
 		prjAwaitEvent(eventId);
@@ -85,15 +106,23 @@ void serialDriverTask() {
 	SerialDriverData data;
 
 	uint32_t otherTask;
+	uint32_t pollingTask;
 	uint8_t message[MAX_MESSAGE_LEN];
 	uint32_t msgLen;
+	uint32_t dummy;
 
 	data.keepRunning = true;
 	data.blockedCharTid = 0;
 
-	prjRegisterAs(NAMESERVER_NAME_SERIAL_DRIVER);
+	//Receive data from initializer
+	prjReceive(&otherTask, (uint8_t*)&data, sizeof(SerialDriverData));
 
-	prjCreateMicroTask(incomingCharacterPollingTask);
+	//Create and configure the character poller
+	pollingTask = prjCreateMicroTask(incomingCharacterPollingTask);
+	prjSend(pollingTask, (uint8_t*)&data.receiveAwaitEventId, sizeof(uint32_t), (uint8_t*)&dummy, sizeof(uint32_t));
+
+	//Resume the initializer
+	prjReply(otherTask, (uint8_t*)&otherTask, sizeof(uint32_t));
 
 	while (data.keepRunning) {
 
@@ -104,7 +133,7 @@ void serialDriverTask() {
 		}
 
 		if (data.blockedCharTid) {
-			uint32_t ch = readCharNonblocking();
+			uint32_t ch = data.getCharNonBlocking();
 			if (ch != -1) {
 				uint32_t ret = prjReply(data.blockedCharTid, (uint8_t*)&ch, 4);
 				data.blockedCharTid = 0;

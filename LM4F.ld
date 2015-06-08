@@ -39,12 +39,18 @@
 * SRAM:     start point 0x20000000  length 0x8000.  (32K)
 * 
 */
+
+_meta_ram_start = 0x20000000;
+_meta_ram_end = 0x20000000 + 0x00008000;
+
 MEMORY
 {
     FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000
     RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00008000
     STACK (rwx) : ORIGIN = 0x20008000, LENGTH = 0x00000000
 }
+
+
 
 /*
 * Sections definitions:
@@ -56,12 +62,13 @@ MEMORY
 */
 SECTIONS
     {
+    
     /* This section it's the code, containing the NVIC Vector table that must start at 0x0
     *   Look at the LM4F120H5QR datasheet for details. (Table 2-8. Exception Types)
     */
     .text : 
     {
-        /* _start_text = .;  /* This is an index to the beginning of .text segment. */
+        _start_text = .;  /* This is an index to the beginning of .text segment. */
         KEEP(*(.nvic_table)) /* I should keep the NVIC ISR Table because it's needed by the processor to start. */
         *(.text*)            /* This contains the code after the ISR table. */
         *(.rodata*)          /* Read only data.  */

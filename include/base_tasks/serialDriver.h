@@ -29,8 +29,19 @@
 extern void serialDriverTask();
 
 typedef struct {
+	uint32_t receiveAwaitEventId;		//Await Event parameter for blocking to receive a character
+	uint32_t (*getCharNonBlocking)(void);	//pointer to a non-blocking read call
+	uint32_t (*putCharBlocking)(uint32_t);	//pointer to a blocking write call
+} SerialDriverInitData;
+
+typedef struct {
 	bool keepRunning;
 	uint32_t blockedCharTid;
+	uint32_t receiveAwaitEventId;			//Await Event parameter for blocking to receive a character
+	uint32_t (*getCharNonBlocking)(void);	//pointer to a non-blocking read call
+	uint32_t (*putCharBlocking)(uint32_t);	//pointer to a blocking write call
 } SerialDriverData;
+
+uint32_t initializeSerialDriver(SerialDriverInitData initData);
 
 #endif //_SERIAL_DRIVER_H_

@@ -47,8 +47,8 @@ uint32_t sys_metaInfo(TaskDescriptor* active, KernelData* kData) {
 		break;
 	case META_REQUEST_TOTAL_RAM:
 		{
-			uint32_t startLoc = &_meta_ram_start;
-			uint32_t endLoc = &_meta_ram_end;
+			uint32_t startLoc = (uint32_t)&_meta_ram_start;
+			uint32_t endLoc = (uint32_t)&_meta_ram_end;
 			ret = endLoc - startLoc;
 		}
 		break;

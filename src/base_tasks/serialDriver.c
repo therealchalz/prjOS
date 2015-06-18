@@ -37,6 +37,13 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 	switch (messageType) {
 	case MESSAGE_CHARACTER_RECEIVED:
 		prjReply(otherTask, (uint8_t*)&ch, 4);
+		if (data->blockedCharTid) {
+			uint32_t ch = data->getCharNonBlocking();
+			if (ch != -1) {
+				uint32_t ret = prjReply(data->blockedCharTid, (uint8_t*)&ch, 4);
+				data->blockedCharTid = 0;
+			}
+		}
 		break;
 	case MESSAGE_GET_CHAR:
 		ch = data->getCharNonBlocking();
@@ -132,16 +139,7 @@ void serialDriverTask() {
 			processMessage(&data, otherTask, message, msgLen);
 		}
 
-		if (data.blockedCharTid) {
-			uint32_t ch = data.getCharNonBlocking();
-			if (ch != -1) {
-				uint32_t ret = prjReply(data.blockedCharTid, (uint8_t*)&ch, 4);
-				data.blockedCharTid = 0;
-				if (ret < 0) {
-					bwprintf("Serial Driver: Bad reply return value: %d\n\r", ret);
-				}
-			}
-		}
+
 	}
 
 	prjExit();

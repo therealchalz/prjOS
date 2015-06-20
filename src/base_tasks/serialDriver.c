@@ -48,7 +48,14 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 	case MESSAGE_GET_CHAR:
 		ch = data->getCharNonBlocking();
 		if (ch == -1) {
-			data->blockedCharTid = otherTask;
+			if (data->blockedCharTid == 0) {
+				//bwprintf("Serial Driver Block read from task%d\n\r", otherTask);
+				data->blockedCharTid = otherTask;
+			} else {
+				//More than one task trying to read data, return -1 to second task
+				ch = -1;
+				prjReply(otherTask, (uint8_t*)&ch, 4);
+			}
 		} else {
 			prjReply(otherTask, (uint8_t*)&ch, 4);
 		}

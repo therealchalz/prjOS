@@ -31,8 +31,8 @@ void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
 		break;
 	case INT_UART0:
 		{
-			uint32_t interrupts= UARTIntStatus(UART0_BASE, 1);
-			UARTIntClear(UART0_BASE, interrupts);
+			uint32_t interrupts= MAP_UARTIntStatus(UART0_BASE, 1);
+			MAP_UARTIntClear(UART0_BASE, interrupts);
 			sys_eventHappened(kData, EVENTID_UART0, 0);
 			break;
 		}
@@ -41,17 +41,17 @@ void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
 }
 
 void initInterrupts() {
-	IntMasterDisable();
+	MAP_IntMasterDisable();
 
-	IntPriorityMaskSet( 1 << (8-NUM_PRIORITY_BITS));
+	MAP_IntPriorityMaskSet( 1 << (8-NUM_PRIORITY_BITS));
 
 	//Lower ALL used interrupt sources to 1 or lower, but leave
 	//the SVC interrupt at 0.
-	IntPrioritySet(INT_USB0, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(INT_UART0, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(INT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(FAULT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
-	IntPrioritySet(FAULT_SVCALL, 0 << (8-NUM_PRIORITY_BITS));
+	MAP_IntPrioritySet(INT_USB0, 1 << (8-NUM_PRIORITY_BITS));
+	MAP_IntPrioritySet(INT_UART0, 1 << (8-NUM_PRIORITY_BITS));
+	MAP_IntPrioritySet(INT_TIMER0A, 1 << (8-NUM_PRIORITY_BITS));
+	MAP_IntPrioritySet(FAULT_SYSTICK, 1 << (8-NUM_PRIORITY_BITS));
+	MAP_IntPrioritySet(FAULT_SVCALL, 0 << (8-NUM_PRIORITY_BITS));
 
-	IntMasterEnable();
+	MAP_IntMasterEnable();
 }

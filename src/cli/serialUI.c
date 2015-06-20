@@ -5,7 +5,7 @@
  *      Author: che
  */
 
-#include "prjOS/include/base_tasks/serialUI.h"
+#include <prjOS/include/cli/serialUI.h>
 
 void serialUITask(void);
 
@@ -77,8 +77,10 @@ void serialUICharacterCourier(void) {
 
 	while (run) {
 		if(prjGetCh(&ch, serialDriverTid) > 0) {
-			message.data = ch;
-			prjSend(uiTaskTid, (uint8_t*)&message, sizeof(serialUIMessage), (uint8_t*)&ch, sizeof(uint32_t));
+			if ((int8_t)ch > 0) {
+				message.data = ch;
+				prjSend(uiTaskTid, (uint8_t*)&message, sizeof(serialUIMessage), (uint8_t*)&ch, sizeof(uint32_t));
+			}
 		}
 	}
 	//TODO: how to get this task to exit?
@@ -105,6 +107,7 @@ void serialUITask(void) {
 	dummy = prjCreateMicroTask(serialUICharacterCourier);
 	prjSend(dummy, &uiData.serialDriverTid, sizeof(uint32_t), &dummy, sizeof(uint32_t));
 
+
 	//Resume the initializer
 	prjReply(otherTask, (uint8_t*)&dummy, sizeof(uint32_t));
 
@@ -112,6 +115,7 @@ void serialUITask(void) {
 	prjPutStr(line, uiData.serialDriverTid);
 	while (run) {
 		if (prjReceive((uint32_t*)&otherTask, (uint8_t*)&message, sizeof(serialUIMessage)) > 0) {
+			//bwprintf("From: %d, msg: %d, data: %d\n\r", otherTask, message.messageType, message.data);
 			switch (message.messageType) {
 			case SERIAL_UI_MESSAGE_TYPE_COMMAND_SUBSCRIBE:
 				if (commandExecutorTid == 0) {

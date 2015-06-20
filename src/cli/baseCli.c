@@ -30,11 +30,11 @@
  */
 
 #include <inttypes.h> 
+#include <prjOS/include/cli/baseCli.h>
+#include <prjOS/include/cli/serialUI.h>
 
-#include "prjOS/include/cli/cli.h"
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/syscall.h"
-#include "prjOS/include/base_tasks/serialUI.h"
 
 
 /** 
@@ -910,15 +910,9 @@ cli_init (cli_init_data_t *init_data, cli_internal_data_t* data)
     /* mark end of the command list */
     data->list = 0;
 
-
-#ifdef CLI_ROOT_DIRS  
-//    rc = cli_mkdir("config", NULL, &cli_config_dir);
     rc = cli_mkdir(data, "show", 0, &data->cli_show_dir);
-//    rc = cli_mkdir("clear", NULL, &cli_clear_dir);
-//    rc = cli_mkdir("operation", NULL, &cli_operation_dir);
     rc = cli_mkdir(data, "debug", 0, &data->cli_debug_dir);
     rc = cli_mkdir(data, "test", 0, &data->cli_test_dir);
-#endif
 
     data->current_directory = &data->cli_root_element;
     return (RC_CLI_OK);

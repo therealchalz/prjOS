@@ -29,13 +29,13 @@
 void cpuPrintInfo() {
 	bwprintf("Processor: LM4F120\r\n");
 	bwprintf("Board: Stellaris Launchpad Rev A\r\n");
-	bwprintf("Clock: %u\r\n", SysCtlClockGet());
+	bwprintf("Clock: %u\r\n", (MAP_SysCtlClockGet()));
 }
 
 void cpuInit() {
-	FPULazyStackingEnable();
-	FPUEnable();
-	SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+	MAP_FPULazyStackingEnable();
+	MAP_FPUEnable();
+	MAP_SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
 }
 
 void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startFunction) {
@@ -49,11 +49,11 @@ void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startF
 }
 
 void cpuPreemptionTimerDisable() {
-	SysTickDisable();
+	MAP_SysTickDisable();
 }
 void cpuPreemptionTimerEnable() {
 	HWREG(NVIC_ST_CURRENT)=0;	//resets systick counter
-	SysTickEnable();
+	MAP_SysTickEnable();
 }
 
 uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *parms) {

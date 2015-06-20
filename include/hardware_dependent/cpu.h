@@ -32,6 +32,8 @@
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_nvic.h"
+#include "driverlib/rom.h"
+#include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/fpu.h"
 #include "driverlib/systick.h"

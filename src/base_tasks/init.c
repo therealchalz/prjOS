@@ -6,6 +6,7 @@
  */
 
 
+#include <prjOS/include/cli/serialUI.h>
 #include "prjOS/include/base_tasks/serialDriver.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -15,7 +16,6 @@
 #include "string.h"
 #include "prjOS/include/bwio.h"
 #include "prjOS/include/base_tasks/nameserver.h"
-#include "prjOS/include/base_tasks/serialUI.h"
 
 void initTask(void* firstTaskfn) {
 

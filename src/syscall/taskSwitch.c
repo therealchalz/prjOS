@@ -27,6 +27,7 @@
 #include "prjOS/include/task.h"
 //TODO: make this file hardware-independent
 #include "inc/hw_ints.h"
+#include "prjOS/include/hardware_dependent/cpu.h"
 
 //extern kernelToTask(TaskDescriptor* t);
 
@@ -38,8 +39,8 @@ uint32_t sys_taskswitch(TaskDescriptor* t) {
 
 uint32_t prjTaskSwitch(TaskDescriptor* t) {
 	//Re-enable SVC call exception, but block all others
-	IntPriorityMaskSet(1 << (8-NUM_PRIORITY_BITS));
-	IntMasterEnable();
+	MAP_IntPriorityMaskSet(1 << (8-NUM_PRIORITY_BITS));
+	MAP_IntMasterEnable();
 
 	//Switch
 	return sys_taskswitch(t);

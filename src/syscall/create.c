@@ -22,19 +22,18 @@
  * create.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
+#include <prjOS/include/sys_syscall.h>
 
-uint32_t prjCreate(uint32_t priority, void* entryPoint) {
+task_id_t prjCreate(uint32_t priority, void* entryPoint) {
 	asm (svcArg(SYSCALL_CREATE));
-	uint32_t ret;
+	task_id_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-uint32_t prjCreateMicroTask(void* entryPoint) {
+task_id_t prjCreateMicroTask(void* entryPoint) {
 	asm (svcArg(SYSCALL_CREATE_MICROTASK));
-	uint32_t ret;
+	task_id_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }

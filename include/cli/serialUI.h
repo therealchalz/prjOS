@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <string.h>
+#include <prjOS/include/syscall.h>
+#include <prjOS/include/task.h>
+#include <prjOS/include/kernel_data.h>
+#include <prjOS/include/bwio.h>
+#include <prjOS/include/base_tasks/nameserver.h>
 
 #ifndef PRJOS_INCLUDE_BASE_TASKS_SERIALUI_H_
 #define PRJOS_INCLUDE_BASE_TASKS_SERIALUI_H_
@@ -29,13 +29,13 @@ typedef struct {
 } serialUIMessage;
 
 typedef struct {
-	uint32_t serialDriverTid;
+	task_id_t serialDriverTid;
 } SerialUIData;
 
 typedef struct {
-	uint32_t serialDriverTid;
+	task_id_t serialDriverTid;
 } SerialUIInitData;
 
-uint32_t initializeSerialUI(SerialUIInitData initData);
+task_id_t initializeSerialUI(SerialUIInitData initData);
 
 #endif /* PRJOS_INCLUDE_BASE_TASKS_SERIALUI_H_ */

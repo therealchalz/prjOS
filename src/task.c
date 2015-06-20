@@ -22,13 +22,8 @@
  * task.c
  */
 
-#include "prjOS/include/task.h"
-#include "prjOS/include/hardware_dependent/cpu_defs.h"
-#include "prjOS/include/debug.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/hardware_dependent/cpu.h"
-#include "string.h"
-#include "prjOS/include/syscall.h"
+#include <prjOS/include/task.h>
+
 
 void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry) {
 	memset(params, 0, sizeof(TaskCreateParameters));
@@ -41,7 +36,7 @@ void setupDefaultCreateParameters(TaskCreateParameters *params, void* taskEntry)
 
 void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 
-	uint32_t oldId = td->taskId;
+	task_id_t oldId = td->taskId;
 	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
 	uint32_t stackPointer = (uint32_t)td->stackBase;
 	uint32_t taskType = td->taskType;
@@ -143,7 +138,7 @@ uint32_t hasExited(TaskDescriptor* td) {
 	return 0;
 }
 
-TaskDescriptor* findTd(int td, TaskDescriptor* tdList, uint32_t count) {
+TaskDescriptor* findTd(task_id_t td, TaskDescriptor* tdList, uint32_t count) {
 	TaskDescriptor* ret = 0;
 
 	uint32_t tdIndex = td & TASKS_ID_INDEX_MASK;

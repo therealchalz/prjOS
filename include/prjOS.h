@@ -8,7 +8,9 @@
 #ifndef PRJOS_H_
 #define PRJOS_H_
 
-#include "prjOS/include/syscall.h"
+#include <prjOS/include/syscall.h>
+#include <prjOS/include/types.h>
+
 
 int rtos_main();
 

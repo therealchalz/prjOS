@@ -23,11 +23,10 @@
  * taskSwitch.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
+#include <prjOS/include/sys_syscall.h>
 //TODO: make this file hardware-independent
-#include "inc/hw_ints.h"
-#include "prjOS/include/hardware_dependent/cpu.h"
+#include <inc/hw_ints.h>
+#include <prjOS/include/hardware_dependent/cpu.h>
 
 //extern kernelToTask(TaskDescriptor* t);
 

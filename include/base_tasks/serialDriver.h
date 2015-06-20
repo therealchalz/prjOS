@@ -10,12 +10,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <prjOS/include/syscall.h>
+#include <prjOS/include/task.h>
+#include <prjOS/include/kernel_data.h>
+#include <string.h>
+#include <prjOS/include/bwio.h>
+#include <prjOS/include/base_tasks/nameserver.h>
 
 #define MAX_MESSAGE_LEN			512
 

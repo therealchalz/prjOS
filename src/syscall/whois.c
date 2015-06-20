@@ -23,21 +23,17 @@
  * whois.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <prjOS/include/sys_syscall.h>
+#include <prjOS/include/base_tasks/nameserver.h>
 
 uint32_t prjWhoIs (char *name) {
-	uint32_t ret;
+	task_id_t ret;
 	if (strcmp(name,NAMESERVER_NAMESTR) == 0) {
 		//Looking for NameServer - NOTE: Don't need arguments, so no big deal
 		asm (svcArg(SYSCALL_WHOISNS));
 		asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	} else {
-		uint32_t nsTid = prjWhoIs(NAMESERVER_NAMESTR);
+		task_id_t nsTid = prjWhoIs(NAMESERVER_NAMESTR);
 		if (nsTid <= 0)
 			return ERR_WHOIS_WRONG_TID;
 		//Construct query
@@ -95,7 +91,7 @@ uint32_t prjWhoIs (char *name) {
 	return ret;
 }
 
-uint32_t sys_whoIsNs(TaskDescriptor* active, KernelData* kData) {
+task_id_t sys_whoIsNs(TaskDescriptor* active, KernelData* kData) {
 	setTaskReady(active);
 	return kData->nameserverTid;
 }

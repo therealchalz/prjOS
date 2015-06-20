@@ -5,11 +5,9 @@
  *      Author: che
  */
 #include <prjOS/include/base_tasks/serialDriver.h>
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <prjOS/include/sys_syscall.h>
 
-uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid) {
+uint32_t prjGetCh(uint32_t* charOut, task_id_t serialTid) {
 	if (serialTid == 0) {
 		return -1;
 	}
@@ -26,7 +24,7 @@ uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid) {
 	return 1;
 }
 
-uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid) {
+uint32_t prjGetChNonBlocking(uint32_t* charOut, task_id_t serialTid) {
 
 	if (serialTid == 0) {
 		return -1;

@@ -23,9 +23,7 @@
  */
 
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/sys_syscall.h"
-#include "prjOS/include/task.h"
+#include <prjOS/include/sys_syscall.h>
 
 uint32_t prjExit() {
 	asm (svcArg(SYSCALL_THREADEXIT));

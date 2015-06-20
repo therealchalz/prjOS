@@ -9,10 +9,10 @@
 #define PRJOS_INCLUDE_CLI_CLI_H_
 
 typedef struct {
-	uint32_t serialUITid;
-	uint32_t serialDriverTid;
+	task_id_t serialUITid;
+	task_id_t serialDriverTid;
 } CliInitData;
 
-uint32_t cliInit(CliInitData *cliInitData);
+task_id_t cliInit(CliInitData *cliInitData);
 
 #endif /* PRJOS_INCLUDE_CLI_CLI_H_ */

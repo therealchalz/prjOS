@@ -27,7 +27,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "prjOS/include/hardware_dependent/cpu_defs.h"
+#include <string.h>
+#include <prjOS/include/debug.h>
+#include <prjOS/include/bwio.h>
+//#include <prjOS/include/hardware_dependent/cpu.h>
+#include <prjOS/include/syscall.h>
+#include <prjOS/include/hardware_dependent/cpu_defs.h>
+#include <prjOS/include/types.h>
 
 //These may be hardcoded in some hardware dependent
 //places so they shouldn't be changed.  Adding shouldn't
@@ -67,8 +73,8 @@ typedef struct SystemCall {
 } SystemCall;
 
 typedef struct TaskDescriptor {
-	uint32_t taskId;
-	uint32_t parentId;
+	task_id_t taskId;
+	task_id_t parentId;
 	uint32_t* stackPointer;
 	SystemCall systemCall;
 	uint32_t state;
@@ -81,7 +87,7 @@ typedef struct TaskDescriptor {
 } TaskDescriptor;
 
 typedef struct TaskCreateParameters {
-	uint32_t parentId;		//OS-assigned task parent task Id
+	task_id_t parentId;		//OS-assigned task parent task Id
 	uint32_t* stackPointer;
 	uint32_t priority;
 	uint32_t taskType;
@@ -98,16 +104,16 @@ uint32_t isTaskReady(TaskDescriptor* td);
 void setTaskReady(TaskDescriptor* td);
 void taskExit(TaskDescriptor* td);
 uint32_t hasExited(TaskDescriptor* td);
-TaskDescriptor* findTd(int td, TaskDescriptor* tdList, uint32_t count);
+TaskDescriptor* findTd(task_id_t td, TaskDescriptor* tdList, uint32_t count);
 
 uint16_t getNumRegularTasks(TaskDescriptor* tdList, uint32_t count);
 uint16_t getNumMicroTasks(TaskDescriptor* tdList, uint32_t count);
 uint32_t getRegularTaskStackSize();
 uint32_t getMicroTaskStackSize();
-uint32_t getParentTid(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
-uint32_t* getStackBase(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
-uint32_t* getStackHead(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
-uint32_t getTaskState(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
-uint8_t getTaskType(TaskDescriptor* tdList, uint32_t count, uint32_t tid);
+uint32_t getParentTid(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint32_t* getStackBase(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint32_t* getStackHead(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint32_t getTaskState(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint8_t getTaskType(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
 
 #endif /* TASK_H_ */

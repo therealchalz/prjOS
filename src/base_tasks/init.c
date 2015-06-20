@@ -6,20 +6,20 @@
  */
 
 
-#include <prjOS/include/cli/serialUI.h>
-#include "prjOS/include/base_tasks/serialDriver.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <string.h>
+#include <prjOS/include/syscall.h>
+#include <prjOS/include/task.h>
+#include <prjOS/include/kernel_data.h>
+#include <prjOS/include/bwio.h>
+#include <prjOS/include/cli/serialUI.h>
+#include <prjOS/include/base_tasks/serialDriver.h>
+#include <prjOS/include/base_tasks/nameserver.h>
 
 void initTask(void* firstTaskfn) {
 
-	uint32_t tid;
+	task_id_t tid;
 	uint8_t dummy = 0;
 
 	bwprintf("Init starting\n\r");

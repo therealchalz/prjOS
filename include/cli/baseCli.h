@@ -33,6 +33,7 @@
 #define __CLI_H__
 
 #include <inttypes.h>
+#include <prjOS/include/task.h>
 
 /*
  * Public directories that applications can register with.
@@ -94,31 +95,14 @@ typedef struct t_nodal_record {
     struct t_nodal_record  *link2subdir;
 } cli_record_t;
 
-
-
-/*
- * A few common root command directories
- * if enabled. 
- */
-/*
-#ifdef CLI_ROOT_DIRS 
-extern cli_record_t cli_config_dir;
-extern cli_record_t cli_show_dir;
-extern cli_record_t cli_clear_dir;
-//extern cli_record_t cli_operation_dir;
-extern cli_record_t cli_debug_dir;
-extern cli_record_t cli_test_dir;
-#endif
-*/
-
 /*
  * The structure required to initialize the CLI facility.
  * It must be initialized before use.
  */
 typedef struct {
     char  prefix[CLI_ENTRY_LEN];
-    uint32_t serialDriverTid;
-    uint32_t serialUITid;
+    task_id_t serialDriverTid;
+    task_id_t serialUITid;
 } cli_init_data_t;
 
 /*
@@ -127,16 +111,14 @@ typedef struct {
  */
 typedef struct {
 	char  prefix[CLI_ENTRY_LEN];
-	uint32_t serialDriverTid;
-	uint32_t serialUITid;
+	task_id_t serialDriverTid;
+	task_id_t serialUITid;
 	cli_record_t cli_root_element;		//root directory structure
 	cli_record_t *current_directory;	//pointer to present working directory (pwd)
 	struct t_nodal_record  *list;
-#ifdef CLI_ROOT_DIRS
 	cli_record_t cli_show_dir;
 	cli_record_t cli_debug_dir;
 	cli_record_t cli_test_dir;
-#endif
 	char cli_prompt[CLI_PROMPT_LEN];
 } cli_internal_data_t;
 

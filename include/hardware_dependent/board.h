@@ -27,12 +27,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "prjOS/include/hardware_dependent/cpu.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/gpio.h"
-#include "include/common.h"
+#include <prjOS/include/hardware_dependent/cpu.h>
+#include <inc/hw_memmap.h>
+#include <inc/hw_types.h>
+#include <driverlib/sysctl.h>
+#include <driverlib/gpio.h>
+#include <include/common.h>
 
 #define RED_LED   GPIO_PIN_1
 #define BLUE_LED  GPIO_PIN_2

@@ -6,8 +6,8 @@
  */
 #include <prjOS/include/base_tasks/serialDriver.h>
 
-uint32_t initializeSerialDriver(SerialDriverInitData initData) {
-	uint32_t driverTid;
+task_id_t initializeSerialDriver(SerialDriverInitData initData) {
+	task_id_t driverTid;
 	uint32_t dummy;
 	SerialDriverData driverData;
 
@@ -22,7 +22,7 @@ uint32_t initializeSerialDriver(SerialDriverInitData initData) {
 	return driverTid;
 }
 
-static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* message, uint32_t size) {
+static void processMessage(SerialDriverData* data, task_id_t otherTask, uint8_t* message, uint32_t size) {
 	if (size < 4) {
 		prjReply(otherTask, message, size);
 		return;
@@ -94,7 +94,7 @@ static void processMessage(SerialDriverData* data, uint32_t otherTask, uint8_t* 
 
 
 void incomingCharacterPollingTask(void) {
-	uint32_t parentTid = prjGetParentTid();
+	task_id_t parentTid = prjGetParentTid();
 	uint32_t eventId;
 	char run = 1;
 
@@ -119,8 +119,8 @@ void incomingCharacterPollingTask(void) {
 void serialDriverTask() {
 	SerialDriverData data;
 
-	uint32_t otherTask;
-	uint32_t pollingTask;
+	task_id_t otherTask;
+	task_id_t pollingTask;
 	uint8_t message[MAX_MESSAGE_LEN];
 	uint32_t msgLen;
 	uint32_t dummy;

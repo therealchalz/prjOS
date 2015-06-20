@@ -8,7 +8,7 @@
 #ifndef BWIO_H_
 #define BWIO_H_
 
-#include "include/bwio.h"
+#include <include/bwio.h>
 
 int bwprintf(const char *format, ...);
 

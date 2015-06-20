@@ -27,6 +27,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <prjOS/include/types.h>
+
 
 //SVC call parameters (immediate values)
 #define SYSCALL_HARDWARE_CALL		0	//Do not change this one
@@ -121,7 +123,7 @@
 /* META_INFO request structure */
 typedef struct MetaInfoRequest {
 	uint32_t requestType;		//Required
-	uint32_t taskId;			//Optional parameter for some calls
+	task_id_t taskId;			//Optional parameter for some calls
 	void* extendedResult;		//Pointer to an extended result structure if required
 } MetaInfoRequest;
 
@@ -140,11 +142,11 @@ typedef struct MetaTasksInfoResult {
 
 #define META_REQUEST_TASK_INFO				4
 typedef struct MetaTaskInfoResult {
-	uint32_t taskID;
+	task_id_t taskID;
 	uint32_t* stackBase;
 	uint32_t* stackHead;
 	uint8_t taskState;
-	uint32_t parentTid;
+	task_id_t parentTid;
 	uint8_t taskType;
 } MetaTaskInfoResult;
 
@@ -157,25 +159,25 @@ typedef struct MetaTaskInfoResult {
 #define META_REQUEST_TOTAL_FLASH			11
 #define META_REQUEST_USED_FLASH				12
 
-uint32_t prjGetParentTid(void);
-uint32_t prjGetTid(void);
+task_id_t prjGetParentTid(void);
+task_id_t prjGetTid(void);
 uint32_t prjYield(void);
 uint32_t prjExit(void);
-uint32_t prjCreate(uint32_t priority, void* entryPoint);
+task_id_t prjCreate(uint32_t priority, void* entryPoint);
 uint32_t prjChangePriority(uint32_t newPriority);
-uint32_t prjSend(uint32_t tid, uint8_t *msg, uint32_t msgLen, uint8_t *reply, uint32_t replyLen);
-uint32_t prjReceive(uint32_t *tid, uint8_t *msg, uint32_t msgLen);
-uint32_t prjReceiveNonBlocking(uint32_t *tid, uint8_t *msg, uint32_t msgLen);
-uint32_t prjReply(uint32_t tid, uint8_t *msg, uint32_t msgLen);
-uint32_t prjWhoIs(char *name);
-uint32_t prjRegisterNameserver(uint32_t tid);
+uint32_t prjSend(task_id_t tid, uint8_t *msg, uint32_t msgLen, uint8_t *reply, uint32_t replyLen);
+uint32_t prjReceive(task_id_t *tid, uint8_t *msg, uint32_t msgLen);
+uint32_t prjReceiveNonBlocking(task_id_t *tid, uint8_t *msg, uint32_t msgLen);
+uint32_t prjReply(task_id_t tid, uint8_t *msg, uint32_t msgLen);
+task_id_t prjWhoIs(char *name);
+uint32_t prjRegisterNameserver(task_id_t tid);
 uint32_t prjRegisterAs(char* name);
-uint32_t prjGetCh(uint32_t* charOut, uint32_t serialTid);
-uint32_t prjGetChNonBlocking(uint32_t* charOut, uint32_t serialTid);
-uint32_t prjPutBuf(const uint8_t* str, uint16_t len, uint32_t serialTid);
-uint32_t prjPutStr(const char* str, uint32_t serialTid);
+uint32_t prjGetCh(uint32_t* charOut, task_id_t serialTid);
+uint32_t prjGetChNonBlocking(uint32_t* charOut, task_id_t serialTid);
+uint32_t prjPutBuf(const uint8_t* str, uint16_t len, task_id_t serialTid);
+uint32_t prjPutStr(const char* str, task_id_t serialTid);
 uint32_t prjAwaitEvent( uint32_t eventid);
-uint32_t prjCreateMicroTask(void* entryPoint);
+task_id_t prjCreateMicroTask(void* entryPoint);
 uint32_t prjMetaInfo(MetaInfoRequest* request);
 
 #endif /* SYSCALL_H_ */

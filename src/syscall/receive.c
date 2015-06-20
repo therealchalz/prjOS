@@ -23,20 +23,16 @@
  * receive.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
+#include <prjOS/include/sys_syscall.h>
 
-uint32_t prjReceive(uint32_t *tid, uint8_t *msg, uint32_t msgLen) {
+uint32_t prjReceive(task_id_t *tid, uint8_t *msg, uint32_t msgLen) {
 	asm (svcArg(SYSCALL_RECEIVE));
 	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-uint32_t prjReceiveNonBlocking(uint32_t *tid, uint8_t *msg, uint32_t msgLen) {
+uint32_t prjReceiveNonBlocking(task_id_t *tid, uint8_t *msg, uint32_t msgLen) {
 	asm (svcArg(SYSCALL_RECEIVE_NONBLOCK));
 	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);

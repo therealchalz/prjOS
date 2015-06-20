@@ -25,8 +25,11 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-void printCurrentStackTop(int numItems);
-void printStackTop(char* stackLocation, int numItems);
-void prettyPrintMemory(char *location, int numBytes, char byteGroupSize, char showAsLittleEndian);
+#include <prjOS/include/bwio.h>
+#include <prjOS/include/task.h>
+
+void printCurrentStackTop(uint16_t numItems);
+void printStackTop(char* stackLocation, uint16_t numItems);
+void prettyPrintMemory(char *location, uint16_t numBytes, uint8_t byteGroupSize, uint8_t showAsLittleEndian);
 void printCEnvironmentSettings();
 #endif /* DEBUG_H_ */

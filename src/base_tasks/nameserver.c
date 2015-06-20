@@ -23,13 +23,11 @@
  * nameserver.c
  */
 
-#include "prjOS/include/base_tasks/nameserver.h"
-#include "prjOS/include/syscall.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
+#include <prjOS/include/base_tasks/nameserver.h>
+
 
 void nameserverEntry() {
-	uint32_t nameserverTid = prjGetTid();
+	task_id_t nameserverTid = prjGetTid();
 	bwprintf("NAMESERVER: INFO: Nameserver started: %d.\n\r", nameserverTid);
 	char run = 1;
 
@@ -39,7 +37,7 @@ void nameserverEntry() {
 	memset(nameEntries, 0, NAMESERVER_MAX_NAMES * sizeof(NameserverEntry));
 
 	//Read in query
-	uint32_t sender;
+	task_id_t sender;
 	NameserverQuery query;
 
 	prjRegisterNameserver(nameserverTid);
@@ -65,7 +63,7 @@ void nameserverEntry() {
 		}
 		//bwprintf("NAMESERVER: DEBUG: Received request from: %d.  Opcode: %d.\n\r", sender, query.operation);
 		//bwprintf("NAMESERVER: DEBUG: Got string: %s\n\r", query.buffer);
-		uint32_t i;
+		uint16_t i;
 
 		uint32_t replyOperation;
 		uint32_t returnValue;
@@ -139,7 +137,7 @@ void nameserverEntry() {
 		reply.bufferLen = sizeof(returnValue);
 		reply.operation = replyOperation;
 		//bwprintf("NAMESERVER: DEBUG: Replying to sender: %d.\n\r", sender);
-		int replyRet = prjReply(sender, (uint8_t*)&reply, sizeof(reply));
+		uint32_t replyRet = prjReply(sender, (uint8_t*)&reply, sizeof(reply));
 		if (replyRet != 0) {
 			bwprintf("NAMESERVER: ERR: Reply returned %d.\n\r", replyRet);
 		}

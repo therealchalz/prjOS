@@ -22,8 +22,7 @@
  * yield.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
+#include <prjOS/include/sys_syscall.h>
 
 uint32_t prjYield() {
 	asm (svcArg(SYSCALL_YIELD));

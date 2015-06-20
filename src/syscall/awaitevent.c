@@ -1,7 +1,6 @@
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/sys_syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/bwio.h"
+
+#include <prjOS/include/sys_syscall.h>
+
 
 uint32_t prjAwaitEvent( uint32_t eventid) {
 	asm volatile(svcArg(SYSCALL_AWAIT_EVENT));

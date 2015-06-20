@@ -23,30 +23,28 @@
  * debug.c
  */
 
-#include "prjOS/include/debug.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/task.h"
+#include <prjOS/include/debug.h>
 
 // byteGroupSize={1,2,4}
 // showAsLittleEndian={0,!0}
 
-void prettyPrintMemory(char *location, int numBytes, char byteGroupSize, char showAsLittleEndian) {
+void prettyPrintMemory(char *location, uint16_t numBytes, uint8_t byteGroupSize, uint8_t showAsLittleEndian) {
 	if (numBytes == 0)
 		return;
 	//Word aligned print
-	int bytesToSkip = ((int)location % 16);
+	uint16_t bytesToSkip = ((uint32_t)location % 16);
 	location -= bytesToSkip;
 
 	numBytes += bytesToSkip;
-	int bytesLeft = numBytes;
+	uint16_t bytesLeft = numBytes;
 
 	while (bytesLeft > 0) {
 		bwprintf("%08x", location);
-		int bytesThisLine = 16;
+		uint8_t bytesThisLine = 16;
 		if (bytesLeft < bytesThisLine)
 			bytesThisLine = bytesLeft;
 		char groupSize = 0;
-		int b;
+		uint8_t b;
 		for (b = 0; b<bytesThisLine; b++) {
 			if (groupSize >= byteGroupSize)
 				groupSize = 0;
@@ -82,20 +80,20 @@ void prettyPrintMemory(char *location, int numBytes, char byteGroupSize, char sh
 		bwprintf("\r\n");
 	}
 }
-void prettyPrintMemoryBytes(char *location, int numBytes) {
+void prettyPrintMemoryBytes(char *location, uint16_t numBytes) {
 	prettyPrintMemory(location, numBytes, 1, 0);
 
 }
-void prettyPrintMemory32Bit(char* location, int numWords) {
+void prettyPrintMemory32Bit(char* location, uint16_t numWords) {
 	prettyPrintMemory(location, numWords*4, 4, 1);
 }
-void printStackTop(char* stackLocation, int numItems) {
+void printStackTop(char* stackLocation, uint16_t numItems) {
 	prettyPrintMemory32Bit(stackLocation, numItems);
 }
-void printCurrentStackTop(int numItems) {
-	int x = 4;
-	int *px = &x;
-	int skipAmount = 5;
+void printCurrentStackTop(uint16_t numItems) {
+	uint32_t x = 4;
+	uint32_t *px = &x;
+	uint32_t skipAmount = 5;
 	printStackTop((char*)(px+skipAmount), numItems);
 }
 void printCEnvironmentSettings() {

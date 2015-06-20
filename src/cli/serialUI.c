@@ -9,8 +9,8 @@
 
 void serialUITask(void);
 
-uint32_t initializeSerialUI(SerialUIInitData initData) {
-	uint32_t uiTid;
+task_id_t initializeSerialUI(SerialUIInitData initData) {
+	task_id_t uiTid;
 	uint32_t dummy;
 
 	SerialUIData data;

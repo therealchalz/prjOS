@@ -7,13 +7,10 @@
 
 
 #include <prjOS/include/base_tasks/serialDriver.h>
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "string.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <prjOS/include/sys_syscall.h>
 
 //len is number of bytes in str
-uint32_t prjPutBuf(const uint8_t* str, uint16_t len, uint32_t serialTid) {
+uint32_t prjPutBuf(const uint8_t* str, uint16_t len, task_id_t serialTid) {
 	if (serialTid == 0) {
 		return -1;
 	}

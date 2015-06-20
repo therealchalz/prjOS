@@ -18,8 +18,8 @@
     Modified by Charles Hache <chalz@member.fsf.org>
 */
 
-#include "prjOS/include/bwio.h"
-#include "include/bwio.h"
+#include <prjOS/include/bwio.h>
+#include <include/bwio.h>
 
 /*
 	putchar is the only external dependency for this file,

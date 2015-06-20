@@ -7,11 +7,9 @@
 
 
 #include <prjOS/include/base_tasks/serialDriver.h>
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "string.h"
+#include <prjOS/include/sys_syscall.h>
 
-uint32_t prjPutStr(const char* str, uint32_t serialTid) {
+uint32_t prjPutStr(const char* str, task_id_t serialTid) {
 	uint16_t len = strlen(str);
 
 	if (len == 0)

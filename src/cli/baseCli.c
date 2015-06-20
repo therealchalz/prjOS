@@ -32,10 +32,8 @@
 #include <inttypes.h> 
 #include <prjOS/include/cli/baseCli.h>
 #include <prjOS/include/cli/serialUI.h>
-
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/syscall.h"
-
+#include <prjOS/include/bwio.h>
+#include <prjOS/include/syscall.h>
 
 /** 
  * cli -- command line interpreter
@@ -98,7 +96,6 @@
 #endif
 
 
-
 /*
  * The maximum number of entries displayed on a single line
  * is ENTRIES_PER_LINE. If there are more than ENTRIES_PER_LINE,
@@ -106,9 +103,6 @@
  * screens. 
  */
 #define ENTRIES_PER_LINE   ( 3 )
-
-
-
 
 /*
  * navigation commands
@@ -124,7 +118,7 @@
 
 static void cliprintf(cli_internal_data_t* data, const char *format, ...) {
 	char out[128];
-	register int *varg = (int *)(&format);
+	register uint32_t *varg = (uint32_t *)(&format);
 	bwsprintf2(out, format, varg);
 	prjPutStr(out, data->serialDriverTid);
 }
@@ -174,9 +168,6 @@ str_exact (char *p1, char *p2, uint16_t n)
         return 0;
     }
 }
-
-
-
 
 /*
  * NAME 

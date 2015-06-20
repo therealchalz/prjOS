@@ -22,17 +22,16 @@
  * gettid.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
+#include <prjOS/include/sys_syscall.h>
 
-uint32_t prjGetTid() {
+task_id_t prjGetTid() {
 	asm (svcArg(SYSCALL_GET_TID));
-	uint32_t ret;
+	task_id_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);
 	return ret;
 }
 
-uint32_t sys_getTid(TaskDescriptor* active){
+task_id_t sys_getTid(TaskDescriptor* active){
 	setTaskReady(active);
 	return active->taskId;
 }

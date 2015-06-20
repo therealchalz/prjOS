@@ -26,20 +26,18 @@
 #define CPU_H_
 
 #include <stdint.h>
-#include "prjOS/include/task.h"
-#include "prjOS/include/hardware_dependent/cpu_defs.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "inc/hw_ints.h"
-#include "inc/hw_nvic.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/fpu.h"
-#include "driverlib/systick.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/hardware_dependent/cpu_defs.h"
-#include "prjOS/include/task.h"
+#include <inc/hw_memmap.h>
+#include <inc/hw_types.h>
+#include <inc/hw_ints.h>
+#include <inc/hw_nvic.h>
+#include <driverlib/rom.h>
+#include <driverlib/rom_map.h>
+#include <driverlib/sysctl.h>
+#include <driverlib/fpu.h>
+#include <driverlib/systick.h>
+#include <prjOS/include/bwio.h>
+#include <prjOS/include/hardware_dependent/cpu_defs.h>
+#include <prjOS/include/task.h>
 
 void cpuInit();
 void cpuPrintInfo();

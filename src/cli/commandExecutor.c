@@ -1,4 +1,4 @@
-#include "prjOS/include/cli/commandExecutor.h"
+#include <prjOS/include/cli/commandExecutor.h>
 
 static char isCommandOk(char* command) {
 	uint16_t idx = 0;
@@ -85,7 +85,6 @@ static void commandExecutorEntry(void) {
 	CommandExecutorData data;
 
 	prjReceive(&parentTid, (uint8_t*)&data, sizeof(CommandExecutorData));
-	bwprintf("ASD\n\r");
 	prjReply(parentTid, NULL, 0);
 
 	//cli_record_t cmdRecordLight;
@@ -101,8 +100,6 @@ static void commandExecutorEntry(void) {
 
 	message.messageType = SERIAL_UI_MESSAGE_TYPE_COMMAND_SUBSCRIBE;
 
-	bwprintf("Started!!!!!\n\r");
-
 	while (1) {
 		prjSend(data.serialUITid, (uint8_t*)&message, sizeof(message),
 				&command, MAX_LINE_LENGTH);
@@ -111,8 +108,8 @@ static void commandExecutorEntry(void) {
 	prjExit();
 }
 
-uint32_t cliInit(CliInitData *cliInitData) {
-	uint32_t commandExecutorTid;
+task_id_t cliInit(CliInitData *cliInitData) {
+	task_id_t commandExecutorTid;
 	uint32_t dummy;
 	CommandExecutorData data;
 
@@ -121,7 +118,7 @@ uint32_t cliInit(CliInitData *cliInitData) {
 	data.serialUITid = cliInitData->serialUITid;
 	data.serialDriverTid = cliInitData->serialDriverTid;
 
-	prjSend(commandExecutorTid, (uint8_t*)&data, sizeof(CommandExecutorData), NULL, 0);
+	prjSend(commandExecutorTid, (uint8_t*)&data, sizeof(CommandExecutorData), &dummy, 4);
 
 	return commandExecutorTid;
 }

@@ -24,7 +24,7 @@
  * For Stellaris Launchpad
  */
 
-#include "prjOS/include/hardware_dependent/cpu.h"
+#include <prjOS/include/hardware_dependent/cpu.h>
 
 void cpuPrintInfo() {
 	bwprintf("Processor: LM4F120\r\n");

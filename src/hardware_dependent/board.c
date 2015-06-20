@@ -25,7 +25,7 @@
  * For Stellaris Launchpad
  */
 
-#include "prjOS/include/hardware_dependent/board.h"
+#include <prjOS/include/hardware_dependent/board.h>
 
 
 static void statusLedInit() {

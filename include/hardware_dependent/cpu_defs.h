@@ -44,10 +44,10 @@
 #define EVENTS_NUM_TYPES			8
 
 typedef struct TaskCpuCreateParameters {
-	int regs[13];			//R0-R12
+	uint32_t regs[13];			//R0-R12
 	void* startFunction;	//aka LR, R14
-	int exceptionReturn;	//aka EXC_RETURN, pg 106.  0xFFFF FFF9 - use MSP (kernel) , 0xFFFF FFFD (task)
-	int IAPSR;				//typically always 0
+	uint32_t exceptionReturn;	//aka EXC_RETURN, pg 106.  0xFFFF FFF9 - use MSP (kernel) , 0xFFFF FFFD (task)
+	uint32_t IAPSR;				//typically always 0
 } TaskCpuCreateParameters;
 
 #endif /* CPU_DEP_H_ */

@@ -1,7 +1,4 @@
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "prjOS/include/sys_syscall.h"
+#include <prjOS/include/sys_syscall.h>
 
 extern uint32_t _meta_ram_start;
 extern uint32_t _meta_ram_end;

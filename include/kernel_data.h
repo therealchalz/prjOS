@@ -25,10 +25,11 @@
 #ifndef KERNEL_DATA_H_
 #define KERNEL_DATA_H_
 
-#include "prjOS/include/scheduler.h"
+#include <prjOS/include/scheduler.h>
+#include <prjOS/include/task.h>
 
 typedef struct EventQuery {
-	uint32_t waitingTid;
+	task_id_t waitingTid;
 	struct EventQuery* nextQuery;
 	uint32_t state;
 	uint32_t eventId;
@@ -44,7 +45,7 @@ typedef struct KernelData {
 	TaskDescriptor* taskDescriptorList;		// Pointer to the list of all tasks
 	uint32_t tdCount;						// Size of task list
 	SchedulerStructure* schedulerStructure;	// Used to hold the state of the scheduler
-	uint32_t nameserverTid;					// Task ID of the nameserver
+	task_id_t nameserverTid;				// Task ID of the nameserver
 	EventData* eventData;					// Pointer to event queues and other data
 } KernelData;
 

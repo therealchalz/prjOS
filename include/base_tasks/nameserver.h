@@ -25,6 +25,12 @@
 #ifndef NAMESERVER_H_
 #define NAMESERVER_H_
 
+#include <string.h>
+#include <stdint.h>
+#include <prjOS/include/task.h>
+#include <prjOS/include/syscall.h>
+#include <prjOS/include/bwio.h>
+
 #define NAMESERVER_NAMESTR			"NameServer"
 #define NAMESERVER_MAX_NAMES		16
 #define NAMESERVER_MAX_NAME_LENGTH	32
@@ -37,20 +43,16 @@
 #define NAMESERVER_OPERATION_TOO_LONG	5
 #define NAMESERVER_OPERATION_ERROR		6
 
-//Names consolidated here for system tasks
-#define NAMESERVER_NAME_SERIAL_DRIVER	"serialdriver"
-#define NAMESERVER_NAME_SERIAL_UI		"serialui"
-
 typedef struct NameserverEntry {
-	unsigned int tid;
+	task_id_t tid;
 	char name[NAMESERVER_MAX_NAME_LENGTH];
 } NameserverEntry;
 
 typedef struct NameserverQuery {
-	unsigned int senderTid;
+	task_id_t senderTid;
 	char buffer[NAMESERVER_MAX_NAME_LENGTH];
-	unsigned int bufferLen;
-	unsigned int operation; //Possible values defined above
+	uint16_t bufferLen;
+	uint8_t operation; //Possible values defined above
 } NameserverQuery;
 
 void nameserverEntry();

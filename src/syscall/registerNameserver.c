@@ -23,14 +23,10 @@
  * registerNameserver.c
  */
 
-#include "prjOS/include/syscall.h"
-#include "prjOS/include/task.h"
-#include "prjOS/include/kernel_data.h"
-#include "string.h"
-#include "prjOS/include/bwio.h"
-#include "prjOS/include/base_tasks/nameserver.h"
+#include <prjOS/include/sys_syscall.h>
+#include <prjOS/include/base_tasks/nameserver.h>
 
-uint32_t prjRegisterNameserver(uint32_t tid) {
+uint32_t prjRegisterNameserver(task_id_t tid) {
 	asm (svcArg(SYSCALL_REGISTERNS));
 	uint32_t ret;
 	asm (" MOV %[ret], R0\n": [ret] "=r" (ret): :);

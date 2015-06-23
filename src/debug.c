@@ -100,6 +100,7 @@ void printCEnvironmentSettings() {
 	bwprintf("Current Environment: \r\n");
 	bwprintf("Size of int: %d\r\n", sizeof(int));
 	bwprintf("Size of long: %d\r\n", sizeof(long));
+	bwprintf("Size of long long: %d\r\n", sizeof (long long));
 	bwprintf("Size of float: %d\r\n", sizeof(float));
 	bwprintf("Size of double: %d\r\n", sizeof(double));
 	bwprintf("Size of (void*): %d\r\n", sizeof(int*));

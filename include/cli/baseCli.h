@@ -116,9 +116,6 @@ typedef struct {
 	cli_record_t cli_root_element;		//root directory structure
 	cli_record_t *current_directory;	//pointer to present working directory (pwd)
 	struct t_nodal_record  *list;
-	cli_record_t cli_show_dir;
-	cli_record_t cli_debug_dir;
-	cli_record_t cli_test_dir;
 	char cli_prompt[CLI_PROMPT_LEN];
 } cli_internal_data_t;
 

@@ -7,6 +7,8 @@
 
 #include <prjOS/include/hardware_dependent/interrupts.h>
 
+static volatile uint64_t* microTickCounterPtr;
+
 //extern void USB0DeviceIntHandler(void);
 
 void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
@@ -26,8 +28,24 @@ void handleInterrupt(KernelData* kData, uint32_t isrNumber) {
 
 }
 
-void initInterrupts() {
+void systemTimerISR(void) {
+	MAP_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	(*microTickCounterPtr)+= (1000ll*1000ll) / KERNEL_SYSTEM_TICKS_PER_SECOND;
+}
+
+void enableSystemTimer(void) {
+	MAP_TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+}
+
+void disableSystemTimer(void) {
+	MAP_TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+}
+
+void initInterrupts(KernelData *kernelData) {
 	MAP_IntMasterDisable();
+
+	microTickCounterPtr = &(kernelData->systemMicroCount);
+	*microTickCounterPtr = 0;
 
 	MAP_IntPriorityMaskSet( 1 << (8-NUM_PRIORITY_BITS));
 

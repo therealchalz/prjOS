@@ -35,6 +35,7 @@
 
 /* the following should be enough for 32 bit int */
 #define PRINT_BUF_LEN 12
+#define PRINT_LONG_BUF_LEN	22
 
 //#define putchar(c) UARTCharPut( USB_UART_BASE,c)
 //#define putchar(c) USBBufferWrite((tUSBBuffer *)&g_sTxBuffer,(uint8_t *)&c, 1);
@@ -91,6 +92,49 @@ static int prints(char **out, const char *string, int width, int pad)
 	return pc;
 }
 
+static int printli(char **out, int64_t i, int b, int sg, int width, int pad, int letbase)
+{
+	char print_buf[PRINT_LONG_BUF_LEN];
+	char *s;
+	int64_t t;
+	int neg = 0, pc = 0;
+	uint64_t u = i;
+
+	if (i == 0) {
+		print_buf[0] = '0';
+		print_buf[1] = '\0';
+		return prints (out, print_buf, width, pad);
+	}
+
+	if (sg && b == 10 && i < 0) {
+		neg = 1;
+		u = -i;
+	}
+
+	s = print_buf + PRINT_BUF_LEN-1;
+	*s = '\0';
+
+	while (u) {
+		t = u % b;
+		if( t >= 10 )
+			t += letbase - '0' - 10;
+		*--s = t + '0';
+		u /= b;
+	}
+
+	if (neg) {
+		if( width && (pad & PAD_ZERO) ) {
+			printchar (out, '-');
+			++pc;
+			--width;
+		}
+		else {
+			*--s = '-';
+		}
+	}
+
+	return pc + prints (out, s, width, pad);
+}
 
 static int printi(char **out, int i, int b, int sg, int width, int pad, int letbase)
 {
@@ -160,25 +204,58 @@ static int print(char **out, int *varg)
 				width *= 10;
 				width += *format - '0';
 			}
+
+			uint8_t isLong = 0;
+			int64_t longVal;
+			if (*format == 'l' ) {
+				isLong = 1;
+				format++;
+			}
+
 			if( *format == 's' ) {
 				register char *s = *((char **)varg++);
 				pc += prints (out, s?s:"(null)", width, pad);
 				continue;
 			}
 			if( *format == 'd' ) {
-				pc += printi (out, *varg++, 10, 1, width, pad, 'a');
+				if (isLong) {
+					longVal = *((int64_t *) (varg+1)) ;
+					varg+=2;
+					pc += printli(out, longVal, 10, 1, width, pad, 'a');
+					//pc += printi  (out, (int32_t)longVal, 10, 1, width, pad, 'a');
+				} else {
+					pc += printi  (out, *varg++, 10, 1, width, pad, 'a');
+				}
 				continue;
 			}
 			if( *format == 'x' ) {
-				pc += printi (out, *varg++, 16, 0, width, pad, 'a');
+				if (isLong) {
+					longVal = *((int64_t *) (varg+1)) ;
+					varg+=2;
+					pc += printli(out, longVal, 16, 1, width, pad, 'a');
+				} else {
+					pc += printi  (out, *varg++, 16, 1, width, pad, 'a');
+				}
 				continue;
 			}
 			if( *format == 'X' ) {
-				pc += printi (out, *varg++, 16, 0, width, pad, 'A');
+				if (isLong) {
+					longVal = *((int64_t *) (varg+1)) ;
+					varg+=2;
+					pc += printli(out, longVal, 16, 1, width, pad, 'A');
+				} else {
+					pc += printi  (out, *varg++, 16, 1, width, pad, 'A');
+				}
 				continue;
 			}
 			if( *format == 'u' ) {
-				pc += printi (out, *varg++, 10, 0, width, pad, 'a');
+				if (isLong) {
+					longVal = *((int64_t *) (varg+1)) ;
+					varg+=2;
+					pc += printli(out, longVal, 10, 0, width, pad, 'a');
+				} else {
+					pc += printi  (out, *varg++, 10, 0, width, pad, 'a');
+				}
 				continue;
 			}
 			if( *format == 'f' ) {

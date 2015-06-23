@@ -27,7 +27,7 @@ void initTask(void* firstTaskfn) {
 	prjSend(tid, &dummy, 1, &dummy, 1);
 	bwprintf("Init: Nameserver running (%d)\n\r", tid);
 
-	bwprintf("Init: Creating first task (0x%x)\n\r", firstTaskfn);
+	bwprintf("Init: Creating first task (%d)\n\r", firstTaskfn);
 	prjCreate(0, firstTaskfn);
 
 	prjChangePriority(6);

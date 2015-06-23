@@ -40,6 +40,9 @@ uint32_t sys_metaInfo(TaskDescriptor* active, KernelData* kData) {
 			result->stackHead = getStackHead(kData->taskDescriptorList, kData->tdCount, taskId);
 			result->taskState = (uint8_t)getTaskState(kData->taskDescriptorList, kData->tdCount, taskId);
 			result->taskType = getTaskType(kData->taskDescriptorList, kData->tdCount, taskId);
+			result->contextSwitchCount = getTaskContextSwitchCount(kData->taskDescriptorList, kData->tdCount, taskId);
+			result->systemTimeMicros = getTaskSystemTime(kData->taskDescriptorList, kData->tdCount, taskId);
+			result->userTimeMicros = getTaskUserTime(kData->taskDescriptorList, kData->tdCount, taskId);
 		}
 		break;
 	case META_REQUEST_TOTAL_RAM:

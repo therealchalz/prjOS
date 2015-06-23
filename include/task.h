@@ -47,6 +47,7 @@
 #define TASKS_STATE_EVT_BLK		6
 #define TASKS_STATE_SYSCALL_BLK	7
 #define TASKS_STATE_HWINT		8
+#define TASKS_STATE_KILLED		9
 
 #define TASKS_MAX_PRIORITY	    7
 
@@ -78,12 +79,21 @@ typedef struct TaskDescriptor {
 	uint32_t* stackPointer;
 	SystemCall systemCall;
 	uint32_t state;
+	/* You don't want to mess with any of the items above here because
+	 * they're referenced directly from the context switch
+	 */
 	uint32_t priority;
 	uint32_t taskType;
 	struct TaskDescriptor* sendQueueNext;
 	struct TaskDescriptor* sendQueueHead;
 	struct TaskDescriptor* sendQueueTail;
 	uint32_t* stackBase;
+	uint32_t maxStackSize;
+	uint64_t contextSwitchCount;
+	uint64_t systemTimeMicros;
+	uint64_t systemTimeEntryMicros;
+	uint64_t userTimeMicros;
+	uint64_t userTimeEntryMicros;
 } TaskDescriptor;
 
 typedef struct TaskCreateParameters {
@@ -105,7 +115,7 @@ void setTaskReady(TaskDescriptor* td);
 void taskExit(TaskDescriptor* td);
 uint32_t hasExited(TaskDescriptor* td);
 TaskDescriptor* findTd(task_id_t td, TaskDescriptor* tdList, uint32_t count);
-
+uint8_t taskStackOverflow(TaskDescriptor* td);
 uint16_t getNumRegularTasks(TaskDescriptor* tdList, uint32_t count);
 uint16_t getNumMicroTasks(TaskDescriptor* tdList, uint32_t count);
 uint32_t getRegularTaskStackSize();
@@ -115,5 +125,8 @@ uint32_t* getStackBase(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
 uint32_t* getStackHead(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
 uint32_t getTaskState(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
 uint8_t getTaskType(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint64_t getTaskContextSwitchCount(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint64_t getTaskSystemTime(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
+uint64_t getTaskUserTime(TaskDescriptor* tdList, uint32_t count, task_id_t tid);
 
 #endif /* TASK_H_ */

@@ -44,6 +44,7 @@ void cpuPrintInfo();
 void cpuBarf();
 
 uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *parms);
+uint32_t* getSP();
 void cpuSetupTaskDefaultParameters(TaskCpuCreateParameters *params, void* startFunction);
 void cpuPreemptionTimerDisable();
 void cpuPreemptionTimerEnable();

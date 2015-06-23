@@ -27,7 +27,6 @@
 
 #include <prjOS/include/hardware_dependent/board.h>
 
-
 static void statusLedInit() {
 	MAP_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, RED_LED|BLUE_LED|GREEN_LED);
 	MAP_GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_6);
@@ -40,7 +39,7 @@ static void statusLedSetStatus(char status) {
 	MAP_GPIOPinWrite(GPIO_PORTF_BASE, RED_LED|BLUE_LED|GREEN_LED, (status?RED_LED|BLUE_LED|GREEN_LED:0));
 }
 
-void boardInit() {
+void boardInit(KernelData *kernelData) {
 
 	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
@@ -50,10 +49,11 @@ void boardInit() {
 	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
 	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
 
-	initInterrupts();
+	initInterrupts(kernelData);
 
-	MAP_SysTickPeriodSet((MAP_SysCtlClockGet())/100);
+	MAP_SysTickPeriodSet((MAP_SysCtlClockGet())/KERNEL_PREEMPTIONS_PER_SECOND);
 	MAP_SysTickIntEnable();
 
 	MAP_GPIOPinConfigure(GPIO_PA0_U0RX);
@@ -65,8 +65,14 @@ void boardInit() {
 	MAP_UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
 	MAP_UARTEnable(UART0_BASE);
 
+	MAP_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
+	MAP_TimerLoadSet(TIMER0_BASE, TIMER_A, MAP_SysCtlClockGet()/KERNEL_SYSTEM_TICKS_PER_SECOND);
+	MAP_IntEnable(INT_TIMER0A);
+	MAP_TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	MAP_TimerEnable(TIMER0_BASE, TIMER_A);
+
 	statusLedInit();
-	statusLedSetStatus(1);
+	statusLedSetStatus(0);
 
 }
 

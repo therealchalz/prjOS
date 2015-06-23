@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <prjOS/include/base_tasks/serialDriver.h>
 #include <prjOS/include/bwio.h>
 #include <prjOS/include/hardware_dependent/cpu.h>
@@ -32,7 +33,6 @@
 #include <prjOS/include/syscall.h>
 #include <prjOS/include/sys_syscall.h>
 #include <prjOS/include/kernel_data.h>
-#include <string.h>
 #include <prjOS/include/base_tasks/nameserver.h>
 
 extern uint32_t _stack_top;
@@ -133,6 +133,9 @@ void handleSyscall(KernelData* kernelData, TaskDescriptor* t) {
 	case SYSCALL_META_INFO:
 		t->systemCall.returnValue = sys_metaInfo(t, kernelData);
 		break;
+	case SYSCALL_MONOTONIC_MICROS:
+		t->systemCall.returnValue = sys_getMonotonicMicros(t, kernelData);
+		break;
 	}
 }
 
@@ -146,15 +149,33 @@ void kernelTasks(TaskDescriptor* activeTask, KernelData* kernelData, uint32_t pr
 	}
 }
 
+uint64_t getSystemTimerMicros(KernelData* kernelData) {
+	uint64_t ret = 0;
+	disableSystemTimer();
+	ret = kernelData->systemMicroCount;
+	enableSystemTimer();
+	return ret;
+}
+
+static void checkKernelStack(KernelData* kernelData) {
+	uint32_t* sp = getSP();
+	uint32_t stackUsage = (uint32_t)kernelData->stackBase - (uint32_t)sp;
+
+	if (stackUsage > KERNEL_STACK_SIZE) {
+		bwprintf("KERNEL PANIC: Kernel stack size is 0x%x but it's 0x%x right now! (%d bytes)\n\r", KERNEL_STACK_SIZE, stackUsage, stackUsage);
+		while(1) {
+			//TODO: something
+		}
+	}
+
+}
+
 
 int rtos_main(void* firstTaskFn) {
 
-	cpuInit();	/* Clock and other configuration */
-
-	boardInit();	/* Initializes all the other board and
-						application specific CPU and board peripherals */
-
 	uint32_t* stack_top = &_stack_top;
+
+	cpuInit();	/* Clock and other configuration */
 
 	//Put the TDs on the kernel stack
 	TaskDescriptor taskDescriptors[KERNEL_NUMBER_OF_TASK_DESCRIPTORS];
@@ -174,6 +195,11 @@ int rtos_main(void* firstTaskFn) {
 	kernelData.tdCount = KERNEL_NUMBER_OF_TASK_DESCRIPTORS;
 	kernelData.schedulerStructure = &schedStruct;
 	kernelData.eventData = &eventData;
+	kernelData.systemMicroCount = 0;
+	kernelData.stackBase = stack_top;
+
+	boardInit(&kernelData);	/* Initializes all the other board and
+						application specific CPU and board peripherals */
 
 	bwprintf("\n********Kernel Starting********\n\r\n");
 	//bwprintf("Stack Base: %x",(stackBasePtr));
@@ -184,23 +210,54 @@ int rtos_main(void* firstTaskFn) {
 	//Create first tasks
 	createFirstTask(&kernelData, taskDescriptors, KERNEL_NUMBER_OF_TASK_DESCRIPTORS, firstTaskFn);
 
-	TaskDescriptor* currentTask;
+	TaskDescriptor* currentTask = 0;
 	uint32_t preemptionReason = 0;
+	uint64_t systemTimeMicros = 0;
+
 	while(1)
 	{
 		//bwprintf("Getting task to schedule...\n\r");
 		//schedulerPrintTasks(&schedStruct);
+		if (currentTask != 0) {
+			if (currentTask->systemTimeEntryMicros != 0) {
+				systemTimeMicros = getSystemTimerMicros(&kernelData);
+				currentTask->systemTimeMicros += (systemTimeMicros - currentTask->systemTimeEntryMicros);
+			}
+		}
 		currentTask = schedule(&schedStruct);
 		//bwprintf("Scheduler gave us task %d\n\r", currentTask->taskId);
 
 		if (currentTask != 0) {
 			//bwprintf("%d Kernel switching to task...(td @ %x)\r\n", loopCount, currentTask);
+			systemTimeMicros = getSystemTimerMicros(&kernelData);
+			currentTask->userTimeEntryMicros = systemTimeMicros;
+			currentTask->contextSwitchCount = currentTask->contextSwitchCount + 1;
+
+			checkKernelStack(&kernelData);
+
 			cpuPreemptionTimerEnable();
 			preemptionReason = prjTaskSwitch(currentTask);
 			cpuPreemptionTimerDisable();
+
+			systemTimeMicros = getSystemTimerMicros(&kernelData);
+			currentTask->userTimeMicros += systemTimeMicros - currentTask->userTimeEntryMicros;
+
+			if (preemptionReason == 0) {
+				//Only count the kernel time here if we did a syscall; if it is a regular HW interrupt
+				// then it doesn't count for the current task
+				currentTask->systemTimeEntryMicros = systemTimeMicros;
+			} else {
+				currentTask->systemTimeEntryMicros = 0;
+			}
+
+			if (taskStackOverflow(currentTask)) {
+				bwprintf("KERNEL: Killing task %d due to overflow\n\r", currentTask->taskId);
+				taskKill(currentTask);
+			}
+
 			//bwprintf("Kernel running.  Prepemtion Reason: %d\r\n", preemptionReason);
-			kernelTasks(currentTask, &kernelData, preemptionReason);
 			if (!hasExited(currentTask)) {
+				kernelTasks(currentTask, &kernelData, preemptionReason);
 				schedulerAdd(&schedStruct, currentTask);
 			} else {
 				//bwprintf("Not adding task to scheduler - it has quit\n\r");

@@ -56,6 +56,12 @@ void cpuPreemptionTimerEnable() {
 	MAP_SysTickEnable();
 }
 
+uint32_t* getSP() {
+	uint32_t* ret;
+	asm (" MOV %[ret], SP\n": [ret] "=r" (ret): :);
+	return ret;
+}
+
 uint32_t* cpuCreateTask(uint32_t* stackLocation, const TaskCreateParameters *parms) {
 	//Need to set up stack like this:
 	//R4,R5,R6,R7,R8,R9,R10,R11,LR(EXC_RETURN),R0,R1,R2,R3,R12,LR(Pre exception),PC(Pre exception),xPSR(Pre exception)

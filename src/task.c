@@ -40,6 +40,11 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 	uint32_t idx = oldId & TASKS_ID_INDEX_MASK;
 	uint32_t stackPointer = (uint32_t)td->stackBase;
 	uint32_t taskType = td->taskType;
+	uint32_t stackSize;
+	if (taskType == TASK_TYPE_REGULAR)
+		stackSize = KERNEL_TASK_DEFAULT_STACK_SIZE;
+	else if (taskType == TASK_TYPE_MICRO)
+		stackSize = KERNEL_MICROTASK_DEFAULT_STACK_SIZE;
 
 	memset(td, 0, sizeof(TaskDescriptor));
 
@@ -48,11 +53,13 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 		if (idx >= 0 && idx < KERNEL_NUMBER_OF_TASKS) {
 			taskType = TASK_TYPE_REGULAR;
 			stackOffset = KERNEL_STACK_SIZE + (idx * KERNEL_TASK_DEFAULT_STACK_SIZE);
+			stackSize = KERNEL_TASK_DEFAULT_STACK_SIZE;
 		} else if (idx >= KERNEL_NUMBER_OF_TASKS && idx < KERNEL_NUMBER_OF_MICROTASKS+KERNEL_NUMBER_OF_TASKS) {
 			taskType = TASK_TYPE_MICRO;
 			stackOffset = KERNEL_STACK_SIZE +
 					(KERNEL_NUMBER_OF_TASKS * KERNEL_TASK_DEFAULT_STACK_SIZE) +
 					((idx-KERNEL_NUMBER_OF_TASKS) * KERNEL_MICROTASK_DEFAULT_STACK_SIZE);
+			stackSize = KERNEL_MICROTASK_DEFAULT_STACK_SIZE;
 		}
 		stackPointer = ((uint32_t)stackBase - stackOffset);
 
@@ -66,7 +73,13 @@ void reinitializeTd(TaskDescriptor* td, uint32_t* stackBase) {
 	td->taskId = oldId;
 	td->stackPointer = (uint32_t*)stackPointer;
 	td->stackBase = (uint32_t*)stackPointer;
+	td->maxStackSize = stackSize;
 	td->state = TASKS_STATE_INVALID;
+	td->contextSwitchCount = 0;
+	td->systemTimeEntryMicros = 0;
+	td->systemTimeMicros = 0;
+	td->userTimeEntryMicros = 0;
+	td->userTimeMicros = 0;
 }
 
 void initializeTds(TaskDescriptor* tds, uint32_t count, uint32_t* stackBase) {
@@ -122,10 +135,27 @@ void taskExit(TaskDescriptor* td) {
 	td->state = TASKS_STATE_EXITED;
 }
 
+void taskKill(TaskDescriptor* td) {
+	td->state = TASKS_STATE_KILLED;
+}
+
+uint8_t taskStackOverflow(TaskDescriptor* td) {
+	uint8_t ret = 0;
+	uint32_t stackUsage = (uint32_t)td->stackBase - (uint32_t)td->stackPointer;
+
+	if (stackUsage > td->maxStackSize) {
+		bwprintf("TASK PANIC: Task %d stack size is 0x%x (%d) but max is 0x%x.\n\r",td->taskId, stackUsage, stackUsage, td->maxStackSize);
+		ret = 1;
+	}
+
+	return ret;
+}
+
 uint32_t isTdAvailable(TaskDescriptor* td) {
 	switch (td->state) {
 	case TASKS_STATE_INVALID:
 	case TASKS_STATE_EXITED:
+	case TASKS_STATE_KILLED:
 		return 1;
 		break;
 	}
@@ -133,7 +163,8 @@ uint32_t isTdAvailable(TaskDescriptor* td) {
 }
 
 uint32_t hasExited(TaskDescriptor* td) {
-	if (td->state == TASKS_STATE_EXITED)
+	if (td->state == TASKS_STATE_EXITED ||
+			td->state == TASKS_STATE_KILLED)
 		return 1;
 	return 0;
 }
@@ -261,4 +292,28 @@ uint8_t getTaskType(TaskDescriptor* tdList, uint32_t count, uint32_t tid) {
 		return 0;
 	}
 	return task->taskType;
+}
+
+uint64_t getTaskContextSwitchCount(TaskDescriptor* tdList, uint32_t count, task_id_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0l;
+	}
+	return task->contextSwitchCount;
+}
+
+uint64_t getTaskSystemTime(TaskDescriptor* tdList, uint32_t count, task_id_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0l;
+	}
+	return task->systemTimeMicros;
+}
+
+uint64_t getTaskUserTime(TaskDescriptor* tdList, uint32_t count, task_id_t tid) {
+	TaskDescriptor* task = findTd(tid, tdList, count);
+	if (task == 0) {
+		return 0l;
+	}
+	return task->userTimeMicros;
 }

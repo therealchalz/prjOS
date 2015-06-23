@@ -21,6 +21,8 @@
 #include <inc/hw_ints.h>
 
 void handleInterrupt(KernelData* kData, uint32_t isrNumber);
-void initInterrupts();
+void initInterrupts(KernelData *kernelData);
+void enableSystemTimer(void);
+void disableSystemTimer(void);
 
 #endif /* PRJOS_INCLUDE_HARDWARE_DEPENDENT_INTERRUPTS_H_ */

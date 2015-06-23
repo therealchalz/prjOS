@@ -89,6 +89,7 @@
  */
 //#define CLI_DEBUG  ( 1 )
 
+
 #ifdef CLI_DEBUG  
 #define DEBUG_PRINTF(myargs...)   cliprintf(myargs)
 #else
@@ -243,7 +244,7 @@ cli_bind_entry (cli_internal_data_t* data,
     if (p2list->link2subdir == 0) {
         p2list->link2subdir = cmd_rec;
 
-        DEBUG_PRINTF("\"%s\" is the First entry in directory [%s]\n",
+        DEBUG_PRINTF(data, "\"%s\" is the First entry in directory [%s]\r\n",
                   name, p2list->name );
 
     } else {
@@ -277,7 +278,7 @@ cli_bind_entry (cli_internal_data_t* data,
          */
         p2list->next_entry = cmd_rec;
 
-        DEBUG_PRINTF("Appended \"%s\" in directory [%s]\n",
+        DEBUG_PRINTF(data, "Appended \"%s\" in directory [%s]\r\n",
                 name, dir_rec->name);
       }
 
@@ -608,23 +609,23 @@ static cli_record_t
 {
     cli_record_t  *cmd_rec;
 
-    DEBUG_PRINTF("\nAttempting to Find \"%s\" in directory [%s]\n",
-            name, current_directory->name );
+    //DEBUG_PRINTF("\nAttempting to Find \"%s\" in directory [%s]\n",
+    //        name, current_directory->name );
 
     /*
      * check for global command search  
      */
     if (*name == '!') {
-        DEBUG_PRINTF("\nGlobal command search! \n");
+        DEBUG_PRINTF(data, "\nGlobal command search! \r\n");
 
         name++;
         cmd_rec = data->list;
         while (cmd_rec != 0) {
-            DEBUG_PRINTF("\nglobal comparing \"%s\" with entry \"%s\"\n",
+            DEBUG_PRINTF(data, "\nglobal comparing \"%s\" with entry \"%s\"\r\n",
                       name, cmd_rec->name);
 
             if (str_exact(cmd_rec->name, name, CLI_ENTRY_LEN)) {
-                DEBUG_PRINTF("\nGlobal match found for -%s- \n", name);
+                DEBUG_PRINTF(data, "\nGlobal match found for -%s- \r\n", name);
                 return (cmd_rec);
             }
             cmd_rec = cmd_rec->cmd_list;
@@ -639,11 +640,11 @@ static cli_record_t
      */
     cmd_rec = data->current_directory->link2subdir;
     while (cmd_rec != NULL) {
-        DEBUG_PRINTF("\ncomparing \"%s\" with entry \"%s\"\n", 
+        DEBUG_PRINTF(data, "\ncomparing \"%s\" with entry \"%s\"\r\n",
                       name, cmd_rec->name);
 
         if (str_exact(cmd_rec->name, name, CLI_ENTRY_LEN)) { 
-            DEBUG_PRINTF("\nMatch found for -%s- \n", name);
+            DEBUG_PRINTF(data, "\nMatch found for -%s- \r\n", name);
             return (cmd_rec);
         }
         cmd_rec = cmd_rec->next_entry;
@@ -653,7 +654,7 @@ static cli_record_t
      * check to see if the user wants to go back one directory
      */
     if (str_exact(name, CLI_UP_ONE, 2)) { 
-        DEBUG_PRINTF("\nGo up one dir level \n");
+        DEBUG_PRINTF(data, "\nGo up one dir level \r\n");
         data->current_directory = data->current_directory->parent_dir;
         return (0);
     }
@@ -662,7 +663,7 @@ static cli_record_t
      * check to see if user wants to go to the root directory
      */
     if (str_exact(name, CLI_ROOT_DIR, 1)) { 
-        DEBUG_PRINTF("\nGo to root \n");
+        DEBUG_PRINTF(data, "\nGo to root \r\n");
         data->current_directory = &data->cli_root_element;
         return (0);
     }
@@ -671,13 +672,13 @@ static cli_record_t
      * check to see if user wants to list entries
      */
     if (str_exact(name, CLI_LIST_DIR, 2)) { 
-        DEBUG_PRINTF("\nList directory \n");
+        DEBUG_PRINTF(data, "\nList directory \r\n");
         list_directory(data);
         return (0);
     }
 
     if (str_exact(name, CLI_GLOBAL_LIST, 2)) { 
-        DEBUG_PRINTF("\nGlobal List \n");
+        DEBUG_PRINTF(data, "\nGlobal List \r\n");
         global_command_list(data);
         return (0);
     }
@@ -740,7 +741,7 @@ cli_engine (cli_internal_data_t* data, char *input_string)
     char *argv[ARGC_MAX];
 
     if ((input_string == 0) || (*input_string == '\0')) {
-        DEBUG_PRINTF("\r\nEmpty string entered\r\n");
+        DEBUG_PRINTF(data, "\r\nEmpty string entered\r\n");
         cliredraw(data);
         //cliprintf(data, "\n%s >", cli_prompt);
         //fflush(stdout);
@@ -758,32 +759,33 @@ cli_engine (cli_internal_data_t* data, char *input_string)
      *  ....
      */
     p2str = input_string;
-
-    argv[0] = strtok(p2str, ", \t\n\r");
+    char* lasts;
+    argv[0] = strtok_r(p2str, ", \t\n\r", &lasts);
 
     if (argv[0] == '\0') {
-        DEBUG_PRINTF("\nEmpty keyword\n");
+        DEBUG_PRINTF(data, "\nEmpty keyword\r\n");
         cliredraw(data);
         //cliprintf(data, "\n%s >", cli_prompt);
         //fflush(stdout);
         return;
     } 
 
-    DEBUG_PRINTF("\n0 input token \"%s\"\n", argv[0]);
+    DEBUG_PRINTF(data, "\n0 input token \"%s\", 0x%x\r\n", argv[0], argv[0]);
 
     /*
      * now pick off parameters.
      */
     argc = 1;
+
     for (i=1; i<ARGC_MAX; i++) {
 
-        argv[i] = strtok(NULL, " \t\n");
+        argv[i] = strtok_r(NULL, " \t\n", &lasts);
         if (argv[i] == NULL) {
             break;
         } else {
             argc++;
 
-            DEBUG_PRINTF("\n%u input token \"%s\"\n", i, argv[i]);
+            DEBUG_PRINTF(data, "\n%u input token \"%s\", 0x%x\r\n", i, argv[i], argv[i]);
         }
     }
 
@@ -900,10 +902,6 @@ cli_init (cli_init_data_t *init_data, cli_internal_data_t* data)
 
     /* mark end of the command list */
     data->list = 0;
-
-    rc = cli_mkdir(data, "show", 0, &data->cli_show_dir);
-    rc = cli_mkdir(data, "debug", 0, &data->cli_debug_dir);
-    rc = cli_mkdir(data, "test", 0, &data->cli_test_dir);
 
     data->current_directory = &data->cli_root_element;
     return (RC_CLI_OK);

@@ -54,6 +54,7 @@ static void processMessage(SerialDriverData* data, task_id_t otherTask, uint8_t*
 			} else {
 				//More than one task trying to read data, return -1 to second task
 				ch = -1;
+				bwprintf("ALREADY HAVE SUBSCRIBER: %d\n\r", data->blockedCharTid);
 				prjReply(otherTask, (uint8_t*)&ch, 4);
 			}
 		} else {
@@ -108,7 +109,6 @@ void incomingCharacterPollingTask(void) {
 
 	while (run) {
 		prjAwaitEvent(eventId);
-
 		prjSend(parentTid, (uint8_t*)&message, 4, (uint8_t*)&reply, 4);
 	}
 }
@@ -125,15 +125,15 @@ void serialDriverTask() {
 	uint32_t msgLen;
 	uint32_t dummy;
 
-	data.keepRunning = true;
-	data.blockedCharTid = 0;
-
 	//Receive data from initializer
 	prjReceive(&otherTask, (uint8_t*)&data, sizeof(SerialDriverData));
+	data.keepRunning = true;
+	data.blockedCharTid = 0;
 
 	//Create and configure the character poller
 	pollingTask = prjCreateMicroTask(incomingCharacterPollingTask);
 	prjSend(pollingTask, (uint8_t*)&data.receiveAwaitEventId, sizeof(uint32_t), (uint8_t*)&dummy, sizeof(uint32_t));
+	bwprintf("Serial driver created character interrupt: %d\n\r", pollingTask);
 
 	//Resume the initializer
 	prjReply(otherTask, (uint8_t*)&otherTask, sizeof(uint32_t));
@@ -142,6 +142,7 @@ void serialDriverTask() {
 
 		//TODO: improve fairness, or have some form of locking, for reads
 		msgLen = prjReceive(&otherTask, message, MAX_MESSAGE_LEN);
+		//bwprintf("From %d\n\r", otherTask);
 		if (msgLen > 0) {
 			processMessage(&data, otherTask, message, msgLen);
 		}

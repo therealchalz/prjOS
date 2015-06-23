@@ -48,6 +48,7 @@
 #define SYSCALL_AWAIT_EVENT			14
 #define SYSCALL_CREATE_MICROTASK	15
 #define SYSCALL_META_INFO			16
+#define SYSCALL_MONOTONIC_MICROS	17
 
 //TODO: Consolidate error codes.  Try to match POSIX ones?
 
@@ -148,6 +149,9 @@ typedef struct MetaTaskInfoResult {
 	uint8_t taskState;
 	task_id_t parentTid;
 	uint8_t taskType;
+	uint64_t contextSwitchCount;
+	uint64_t systemTimeMicros;
+	uint64_t userTimeMicros;
 } MetaTaskInfoResult;
 
 #define META_REQUEST_STATIC_USED_RAM		5	//Static & global variables
@@ -179,5 +183,6 @@ uint32_t prjPutStr(const char* str, task_id_t serialTid);
 uint32_t prjAwaitEvent( uint32_t eventid);
 task_id_t prjCreateMicroTask(void* entryPoint);
 uint32_t prjMetaInfo(MetaInfoRequest* request);
+uint32_t prjGetMonotonicMicros(uint64_t* micros);
 
 #endif /* SYSCALL_H_ */

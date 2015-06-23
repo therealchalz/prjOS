@@ -47,6 +47,10 @@ typedef struct KernelData {
 	SchedulerStructure* schedulerStructure;	// Used to hold the state of the scheduler
 	task_id_t nameserverTid;				// Task ID of the nameserver
 	EventData* eventData;					// Pointer to event queues and other data
+	volatile uint64_t systemMicroCount;				/*	Number of microseconds since system start
+												subject to implementation's timer's accuracy
+												and granularity, etc. */
+	uint32_t* stackBase;					// Base SP (eg: |base - current| = total usage)
 } KernelData;
 
 #endif /* KERNEL_DATA_H_ */

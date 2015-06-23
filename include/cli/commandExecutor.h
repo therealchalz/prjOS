@@ -8,6 +8,7 @@
 #ifndef PRJOS_INCLUDE_CLI_COMMANDEXECUTOR_H_
 #define PRJOS_INCLUDE_CLI_COMMANDEXECUTOR_H_
 
+#include <stdlib.h>
 #include <prjOS/include/cli/baseCli.h>
 #include <prjOS/include/cli/cli.h>
 #include <prjOS/include/prjOS.h>

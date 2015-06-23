@@ -33,6 +33,8 @@
 #define EVENTS_STATE_INVALID		0	/* Keep as 0 so memset(0) will make everything invalid */
 #define EVENTS_STATE_VALID			1
 
+uint64_t getSystemTimerMicros(KernelData* kData);
+
 task_id_t sys_getParentTid(TaskDescriptor* active);
 task_id_t sys_getTid(TaskDescriptor* active);
 uint32_t sys_yield(TaskDescriptor* active);
@@ -49,6 +51,7 @@ uint32_t sys_awaitEvent(TaskDescriptor* active, KernelData* kData);
 uint32_t sys_eventHappened(KernelData* kData, uint32_t eventid, uint32_t retValue);
 uint32_t sys_createMicroTask(TaskDescriptor* active, TaskCreateParameters* params);
 uint32_t sys_metaInfo(TaskDescriptor* active, KernelData* kData);
+uint32_t sys_getMonotonicMicros(TaskDescriptor* active, KernelData* kData);
 
 uint32_t prjTaskSwitch(TaskDescriptor* td);	//to be called only by kernel threads
 

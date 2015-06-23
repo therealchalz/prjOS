@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <prjOS/include/hardware_dependent/cpu.h>
+#include <prjOS/include/kernel_data.h>
 #include <inc/hw_memmap.h>
 #include <inc/hw_types.h>
 #include <driverlib/sysctl.h>
@@ -38,7 +39,7 @@
 #define BLUE_LED  GPIO_PIN_2
 #define GREEN_LED GPIO_PIN_3
 
-void boardInit();
+void boardInit(KernelData *kernelData);
 
 void boardSetIndicatorLED(int status);
 
